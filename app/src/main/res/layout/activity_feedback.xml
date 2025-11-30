@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/black"
+    tools:context=".feedback">
+    <TextView
+        android:id="@+id/feedbackTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Share your Feedback"
+        android:fontFamily="@font/montserrat_med"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="70dp"/>
+    <ImageButton
+        android:id="@+id/back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignTop="@id/feedbackTitle"
+        android:background="@drawable/chevron_left"
+        android:layout_alignParentLeft="true"
+        android:layout_marginLeft="20dp"
+        android:layout_marginTop="2dp"/>
+
+    <LinearLayout
+        android:id="@+id/feedback"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/feedbackTitle"
+        android:orientation="vertical"
+        android:gravity="center">
+        <TextView
+            android:layout_marginVertical="20dp"
+            android:id="@+id/question"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="What is your opinion for this place?"
+            android:textSize="15sp"
+            android:textColor="#F36600"
+            android:fontFamily="@font/montserrat_med"
+            android:textStyle="bold"/>
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="35dp">
+            <ImageView
+                android:id="@+id/star1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/b_star"
+                android:layout_marginHorizontal="10dp" />
+            <ImageView
+                android:id="@+id/star2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/b_star"
+                android:layout_marginHorizontal="10dp" />
+            <ImageView
+                android:id="@+id/star3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/b_star"
+                android:layout_marginHorizontal="10dp" />
+            <ImageView
+                android:id="@+id/star4"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/b_star"
+                android:layout_marginHorizontal="10dp" />
+            <ImageView
+                android:id="@+id/star5"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/b_star"
+                app:tint="#F3D0B6"
+                android:layout_marginHorizontal="10dp" />
+        </LinearLayout>
+        <EditText
+            android:layout_margin="40dp"
+            android:id="@+id/feedback_box"
+            android:layout_marginVertical="10dp"
+            android:layout_width="match_parent"
+            android:layout_height="270dp"
+            android:background="@drawable/outline_box"
+            android:hint="Would you like to write anything about this product?"
+            android:fontFamily="@font/montserrat_med"
+            android:textColorHint="@color/white"
+            android:textSize="12sp"
+            android:padding="20dp"
+            android:textColor="@color/white"
+            android:gravity="start" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="50 Chatacters"
+            android:fontFamily="@font/montserrat_med"
+            android:textSize="10sp"
+            android:textColor="@color/white"
+            android:layout_marginTop="-70dp"
+            android:layout_gravity="end"
+            android:layout_marginHorizontal="70dp"
+            android:textStyle="bold"/>
+    </LinearLayout>
+    <RelativeLayout
+        android:id="@+id/feedback_btn"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_marginTop="100dp"
+        android:layout_below="@id/feedback">
+        <ImageButton
+            android:id="@+id/feedback_btn_back"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:background="@drawable/button_box_o"
+            android:layout_marginTop="10dp"/>
+        <TextView
+            android:id="@+id/feedback_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Send Feedback"
+            android:textStyle="bold"
+            android:fontFamily="@font/montserrat_med"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:layout_alignTop="@id/feedback_btn_back"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="13dp"/>
+    </RelativeLayout>
+
+</RelativeLayout>

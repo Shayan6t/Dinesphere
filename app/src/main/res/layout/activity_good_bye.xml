@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/bg"
+    tools:context=".goodBye">
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="150dp">
+        <TextView
+            android:id="@+id/seeyou"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="See You"
+            android:fontFamily="@font/montserrat_bold"
+            android:textSize="40sp"
+            android:textColor="#F36600"
+            android:textStyle="bold" />
+        <TextView
+            android:id="@+id/again"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Again!!"
+            android:fontFamily="@font/montserrat_bold"
+            android:textSize="46sp"
+            android:textColor="@color/white"
+            android:textStyle="bold" />
+    </LinearLayout>
+    <ImageView
+        android:id="@+id/zombie"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/zombie"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true" />
+</RelativeLayout>

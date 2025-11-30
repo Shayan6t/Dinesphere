@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/black"
+    tools:context=".intro">
+    <FrameLayout
+        android:id="@+id/topArea"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="5">
+        <ImageView
+            android:id="@+id/bgImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/intro_img"
+            android:scaleType="centerCrop"
+            android:alpha="0.3"/>
+    </FrameLayout>
+    <FrameLayout
+        android:id="@+id/bottomBlock"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:padding="15dp">
+        <LinearLayout
+            android:id="@+id/text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_gravity="top">
+            <TextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Even In A Zombie Apocalypse, you still need food"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="@color/white"
+                android:textSize="30sp"
+                android:textStyle="bold"
+                android:paddingBottom="8dp" />
+            <TextView
+                android:id="@+id/subtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Crave, Find, Dine"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="italic"
+                android:paddingBottom="16dp" />
+        </LinearLayout>
+        <RelativeLayout
+            android:id="@+id/get_started_btn"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp">
+            <ImageButton
+                android:id="@+id/started_btn"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:background="@drawable/button_box_o"
+                android:layout_marginTop="180dp"/>
+            <TextView
+                android:id="@+id/started_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Get Started"
+                android:textStyle="bold"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:layout_alignTop="@id/started_btn"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="13dp"/>
+        </RelativeLayout>
+    </FrameLayout>
+
+</LinearLayout>
