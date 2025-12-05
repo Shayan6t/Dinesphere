@@ -111,10 +111,11 @@ class saved : AppCompatActivity() {
                                 address = item.getString("address"),
                                 latitude = item.getDouble("latitude"),
                                 longitude = item.getDouble("longitude"),
-                                imageUrl = item.optString("restaurant_image", null),
+                                imageUrl = item.optString("image_url", null),
                                 discount = item.optString("discount", null),
                                 distanceKm = item.optDouble("distance_km", 0.0),
-                                rating = item.optDouble("rating", 4.0).toFloat()
+                                rating = item.optDouble("rating", 4.0).toFloat(),
+                                isSaved = true // All restaurants in this list are saved
                             )
                             allSavedRestaurants.add(restaurant)
                         }

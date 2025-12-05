@@ -11,7 +11,8 @@ import com.squareup.picasso.Picasso
 
 class RestaurantAdapter(
     private var restaurants: List<Restaurant>,
-    private val onItemClick: (Restaurant) -> Unit
+    private val onItemClick: (Restaurant) -> Unit,
+    private val onSaveClick: ((Restaurant, Int) -> Unit)? = null
 ) : RecyclerView.Adapter<RestaurantAdapter.RestaurantViewHolder>() {
 
     inner class RestaurantViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -27,7 +28,7 @@ class RestaurantAdapter(
         val star4: ImageView = itemView.findViewById(R.id.star4)
         val star5: ImageView = itemView.findViewById(R.id.star5)
 
-        fun bind(restaurant: Restaurant) {
+        fun bind(restaurant: Restaurant, position: Int) {
             restaurantName.text = restaurant.businessName
             distance.text = String.format("%.1f km away", restaurant.distanceKm)
             location.text = restaurant.address
@@ -36,13 +37,12 @@ class RestaurantAdapter(
             if (!restaurant.imageUrl.isNullOrEmpty()) {
                 Picasso.get()
                     .load(restaurant.imageUrl)
-                    .resize(400, 340) // Resize for performance
+                    .resize(400, 340)
                     .centerCrop()
-                    .placeholder(R.drawable.img) // Default placeholder while loading
-                    .error(R.drawable.img) // Default image if load fails
+                    .placeholder(R.drawable.img)
+                    .error(R.drawable.img)
                     .into(restaurantImage)
             } else {
-                // Use default image if no URL provided
                 restaurantImage.setImageResource(R.drawable.img)
             }
 
@@ -57,14 +57,17 @@ class RestaurantAdapter(
             // Set rating stars
             setRating(restaurant.rating)
 
-            // Click listener
+            // Update save icon based on saved status
+            updateSaveIcon(restaurant.isSaved)
+
+            // Click listener for restaurant item
             itemView.setOnClickListener {
                 onItemClick(restaurant)
             }
 
-            // Save button click
+            // Save button click listener
             saveBtn.setOnClickListener {
-                // Handle save functionality
+                onSaveClick?.invoke(restaurant, position)
             }
         }
 
@@ -81,6 +84,23 @@ class RestaurantAdapter(
                 }
             }
         }
+
+        private fun updateSaveIcon(isSaved: Boolean) {
+            // Always use save_w icon, just change the tint color
+            saveBtn.setImageResource(R.drawable.save_w)
+
+            if (isSaved) {
+                // Tint to orange when saved
+                saveBtn.setColorFilter(
+                    ContextCompat.getColor(itemView.context, R.color.orange)
+                )
+            } else {
+                // Tint to white when not saved
+                saveBtn.setColorFilter(
+                    ContextCompat.getColor(itemView.context, R.color.white)
+                )
+            }
+        }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RestaurantViewHolder {
@@ -90,7 +110,7 @@ class RestaurantAdapter(
     }
 
     override fun onBindViewHolder(holder: RestaurantViewHolder, position: Int) {
-        holder.bind(restaurants[position])
+        holder.bind(restaurants[position], position)
     }
 
     override fun getItemCount(): Int = restaurants.size
@@ -98,5 +118,13 @@ class RestaurantAdapter(
     fun updateRestaurants(newRestaurants: List<Restaurant>) {
         restaurants = newRestaurants
         notifyDataSetChanged()
+    }
+
+    // Update the save status of a specific restaurant
+    fun updateRestaurantSaveStatus(position: Int, isSaved: Boolean) {
+        if (position in restaurants.indices) {
+            (restaurants as? MutableList)?.get(position)?.isSaved = isSaved
+            notifyItemChanged(position)
+        }
     }
 }

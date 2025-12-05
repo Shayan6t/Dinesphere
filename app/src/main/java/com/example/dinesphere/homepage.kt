@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -29,9 +30,11 @@ class homepage : AppCompatActivity() {
     private lateinit var restaurantAdapter: RestaurantAdapter
     private lateinit var allRestaurantAdapter: RestaurantAdapter
     private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var navSaved: LinearLayout
 
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
+    private val savedRestaurantIds = mutableSetOf<Int>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,6 +54,9 @@ class homepage : AppCompatActivity() {
         searchBar = findViewById(R.id.search_bar)
         restaurantRecyclerView = findViewById(R.id.restaurantRecyclerView)
         allRestaurantRecyclerView = findViewById(R.id.allRestaurantRecyclerView)
+
+        // Initialize bottom navigation - Saved button
+        navSaved = findViewById(R.id.save)
 
         // Setup RecyclerViews with horizontal layout
         setupRecyclerViews()
@@ -73,6 +79,18 @@ class homepage : AppCompatActivity() {
         // Disable focus on search bar so it opens search screen instead of keyboard
         searchBar.isFocusable = false
         searchBar.isClickable = true
+
+        // Saved navigation click
+        navSaved.setOnClickListener {
+            val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reload saved restaurant IDs when returning to this activity
+        loadSavedRestaurantIds()
     }
 
     private fun setupRecyclerViews() {
@@ -82,9 +100,15 @@ class homepage : AppCompatActivity() {
             LinearLayoutManager.HORIZONTAL,
             false
         )
-        restaurantAdapter = RestaurantAdapter(emptyList()) { restaurant ->
-            onRestaurantClick(restaurant)
-        }
+        restaurantAdapter = RestaurantAdapter(
+            emptyList(),
+            onItemClick = { restaurant ->
+                onRestaurantClick(restaurant)
+            },
+            onSaveClick = { restaurant, position ->
+                handleSaveClick(restaurant, position, restaurantAdapter)
+            }
+        )
         restaurantRecyclerView.adapter = restaurantAdapter
 
         // Setup all restaurants RecyclerView
@@ -93,9 +117,15 @@ class homepage : AppCompatActivity() {
             LinearLayoutManager.HORIZONTAL,
             false
         )
-        allRestaurantAdapter = RestaurantAdapter(emptyList()) { restaurant ->
-            onRestaurantClick(restaurant)
-        }
+        allRestaurantAdapter = RestaurantAdapter(
+            emptyList(),
+            onItemClick = { restaurant ->
+                onRestaurantClick(restaurant)
+            },
+            onSaveClick = { restaurant, position ->
+                handleSaveClick(restaurant, position, allRestaurantAdapter)
+            }
+        )
         allRestaurantRecyclerView.adapter = allRestaurantAdapter
     }
 
@@ -103,6 +133,154 @@ class homepage : AppCompatActivity() {
         // Handle restaurant item click
         Toast.makeText(this, "Clicked: ${restaurant.businessName}", Toast.LENGTH_SHORT).show()
         // TODO: Navigate to restaurant detail screen
+    }
+
+    private fun handleSaveClick(restaurant: Restaurant, position: Int, adapter: RestaurantAdapter) {
+        if (restaurant.isSaved) {
+            // Unsave the restaurant
+            unsaveRestaurant(restaurant, position, adapter)
+        } else {
+            // Save the restaurant
+            saveRestaurant(restaurant, position, adapter)
+        }
+    }
+
+    private fun saveRestaurant(restaurant: Restaurant, position: Int, adapter: RestaurantAdapter) {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(this, "Please log in to save restaurants", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val url = "${Global.BASE_URL}saved(post).php"
+        Log.d("HomepageDebug", "Saving restaurant: ${restaurant.businessName}")
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            { response ->
+                try {
+                    Log.d("HomepageDebug", "Save response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        restaurant.isSaved = true
+                        savedRestaurantIds.add(restaurant.restaurantId)
+                        adapter.updateRestaurantSaveStatus(position, true)
+                        Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val message = json.optString("message", "Failed to save")
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("HomepageDebug", "Error parsing save response: ${e.message}")
+                    Toast.makeText(this, "Error saving restaurant", Toast.LENGTH_SHORT).show()
+                }
+            },
+            { error ->
+                Log.e("HomepageDebug", "Save error: ${error.message}")
+                Toast.makeText(this, "Failed to save restaurant", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["user_id"] = userId
+                params["restaurant_id"] = restaurant.restaurantId.toString()
+                return params
+            }
+        }
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun unsaveRestaurant(restaurant: Restaurant, position: Int, adapter: RestaurantAdapter) {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val url = "${Global.BASE_URL}saved(delete).php"
+        Log.d("HomepageDebug", "Unsaving restaurant: ${restaurant.businessName}")
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            { response ->
+                try {
+                    Log.d("HomepageDebug", "Unsave response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        restaurant.isSaved = false
+                        savedRestaurantIds.remove(restaurant.restaurantId)
+                        adapter.updateRestaurantSaveStatus(position, false)
+                        Toast.makeText(this, "Removed from saved", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val message = json.optString("message", "Failed to unsave")
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("HomepageDebug", "Error parsing unsave response: ${e.message}")
+                    Toast.makeText(this, "Error removing restaurant", Toast.LENGTH_SHORT).show()
+                }
+            },
+            { error ->
+                Log.e("HomepageDebug", "Unsave error: ${error.message}")
+                Toast.makeText(this, "Failed to unsave restaurant", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["user_id"] = userId
+                params["restaurant_id"] = restaurant.restaurantId.toString()
+                return params
+            }
+        }
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun loadSavedRestaurantIds() {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            return
+        }
+
+        val url = "${Global.BASE_URL}saved(get).php?user_id=$userId"
+        Log.d("HomepageDebug", "Loading saved restaurant IDs")
+
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        savedRestaurantIds.clear()
+                        val restaurantsArray = json.getJSONArray("restaurants")
+                        for (i in 0 until restaurantsArray.length()) {
+                            val item = restaurantsArray.getJSONObject(i)
+                            savedRestaurantIds.add(item.getInt("restaurant_id"))
+                        }
+                        Log.d("HomepageDebug", "Loaded ${savedRestaurantIds.size} saved restaurant IDs")
+                    }
+                } catch (e: Exception) {
+                    Log.e("HomepageDebug", "Error loading saved IDs: ${e.message}")
+                }
+            },
+            { error ->
+                Log.e("HomepageDebug", "Error loading saved IDs: ${error.message}")
+            }
+        )
+
+        Volley.newRequestQueue(this).add(request)
     }
 
     private fun loadUserLocationFromDatabase() {
@@ -137,7 +315,8 @@ class homepage : AppCompatActivity() {
                         currAddress.text = address
                         Log.d("HomepageDebug", "User location loaded: $userLat, $userLng")
 
-                        // Now load restaurants with user's location
+                        // Load saved restaurant IDs first, then restaurants
+                        loadSavedRestaurantIds()
                         loadRestaurantsWithin5km()
                         loadAllRestaurants()
                     } else {
@@ -203,8 +382,9 @@ class homepage : AppCompatActivity() {
 
                         for (i in 0 until restaurantsArray.length()) {
                             val item = restaurantsArray.getJSONObject(i)
+                            val restaurantId = item.getInt("restaurant_id")
                             val restaurant = Restaurant(
-                                restaurantId = item.getInt("restaurant_id"),
+                                restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
                                 latitude = item.getDouble("latitude"),
@@ -212,7 +392,8 @@ class homepage : AppCompatActivity() {
                                 imageUrl = item.optString("image_url", null),
                                 discount = item.optString("discount", null),
                                 distanceKm = item.getDouble("distance_km"),
-                                rating = item.optDouble("rating", 4.0).toFloat()
+                                rating = item.optDouble("rating", 4.0).toFloat(),
+                                isSaved = savedRestaurantIds.contains(restaurantId)
                             )
                             restaurants.add(restaurant)
                         }
@@ -269,8 +450,9 @@ class homepage : AppCompatActivity() {
 
                         for (i in 0 until restaurantsArray.length()) {
                             val item = restaurantsArray.getJSONObject(i)
+                            val restaurantId = item.getInt("restaurant_id")
                             val restaurant = Restaurant(
-                                restaurantId = item.getInt("restaurant_id"),
+                                restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
                                 latitude = item.getDouble("latitude"),
@@ -278,7 +460,8 @@ class homepage : AppCompatActivity() {
                                 imageUrl = item.optString("image_url", null),
                                 discount = item.optString("discount", null),
                                 distanceKm = item.getDouble("distance_km"),
-                                rating = item.optDouble("rating", 4.0).toFloat()
+                                rating = item.optDouble("rating", 4.0).toFloat(),
+                                isSaved = savedRestaurantIds.contains(restaurantId)
                             )
                             restaurants.add(restaurant)
                         }

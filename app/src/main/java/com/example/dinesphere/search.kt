@@ -26,6 +26,7 @@ class search : AppCompatActivity() {
 
     private val allRestaurants = mutableListOf<Restaurant>()
     private val filteredRestaurants = mutableListOf<Restaurant>()
+    private val savedRestaurantIds = mutableSetOf<Int>()
 
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
@@ -69,15 +70,169 @@ class search : AppCompatActivity() {
             LinearLayoutManager.HORIZONTAL,
             false
         )
-        restaurantsAdapter = RestaurantAdapter(filteredRestaurants) { restaurant ->
-            onRestaurantClick(restaurant)
-        }
+        restaurantsAdapter = RestaurantAdapter(
+            filteredRestaurants,
+            onItemClick = { restaurant ->
+                onRestaurantClick(restaurant)
+            },
+            onSaveClick = { restaurant, position ->
+                handleSaveClick(restaurant, position)
+            }
+        )
         restaurantsRecycler.adapter = restaurantsAdapter
     }
 
     private fun onRestaurantClick(restaurant: Restaurant) {
         Toast.makeText(this, "Opening: ${restaurant.businessName}", Toast.LENGTH_SHORT).show()
         // TODO: Navigate to restaurant detail screen
+    }
+
+    private fun handleSaveClick(restaurant: Restaurant, position: Int) {
+        if (restaurant.isSaved) {
+            // Unsave the restaurant
+            unsaveRestaurant(restaurant, position)
+        } else {
+            // Save the restaurant
+            saveRestaurant(restaurant, position)
+        }
+    }
+
+    private fun saveRestaurant(restaurant: Restaurant, position: Int) {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(this, "Please log in to save restaurants", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val url = "${Global.BASE_URL}saved(post).php"
+        Log.d("SearchDebug", "Saving restaurant: ${restaurant.businessName}")
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            { response ->
+                try {
+                    Log.d("SearchDebug", "Save response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        restaurant.isSaved = true
+                        savedRestaurantIds.add(restaurant.restaurantId)
+                        restaurantsAdapter.updateRestaurantSaveStatus(position, true)
+                        Toast.makeText(this, "Saved!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val message = json.optString("message", "Failed to save")
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("SearchDebug", "Error parsing save response: ${e.message}")
+                    Toast.makeText(this, "Error saving restaurant", Toast.LENGTH_SHORT).show()
+                }
+            },
+            { error ->
+                Log.e("SearchDebug", "Save error: ${error.message}")
+                Toast.makeText(this, "Failed to save restaurant", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["user_id"] = userId
+                params["restaurant_id"] = restaurant.restaurantId.toString()
+                return params
+            }
+        }
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun unsaveRestaurant(restaurant: Restaurant, position: Int) {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val url = "${Global.BASE_URL}saved(delete).php"
+        Log.d("SearchDebug", "Unsaving restaurant: ${restaurant.restaurantId}")
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            { response ->
+                try {
+                    Log.d("SearchDebug", "Unsave response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        restaurant.isSaved = false
+                        savedRestaurantIds.remove(restaurant.restaurantId)
+                        restaurantsAdapter.updateRestaurantSaveStatus(position, false)
+                        Toast.makeText(this, "Removed from saved", Toast.LENGTH_SHORT).show()
+                    } else {
+                        val message = json.optString("message", "Failed to unsave")
+                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("SearchDebug", "Error parsing unsave response: ${e.message}")
+                    Toast.makeText(this, "Error removing restaurant", Toast.LENGTH_SHORT).show()
+                }
+            },
+            { error ->
+                Log.e("SearchDebug", "Unsave error: ${error.message}")
+                Toast.makeText(this, "Failed to unsave restaurant", Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["user_id"] = userId
+                params["restaurant_id"] = restaurant.restaurantId.toString()
+                return params
+            }
+        }
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun loadSavedRestaurantIds() {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            return
+        }
+
+        val url = "${Global.BASE_URL}saved(get).php?user_id=$userId"
+        Log.d("SearchDebug", "Loading saved restaurant IDs")
+
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        savedRestaurantIds.clear()
+                        val restaurantsArray = json.getJSONArray("restaurants")
+                        for (i in 0 until restaurantsArray.length()) {
+                            val item = restaurantsArray.getJSONObject(i)
+                            savedRestaurantIds.add(item.getInt("restaurant_id"))
+                        }
+                        Log.d("SearchDebug", "Loaded ${savedRestaurantIds.size} saved restaurant IDs")
+                    }
+                } catch (e: Exception) {
+                    Log.e("SearchDebug", "Error loading saved IDs: ${e.message}")
+                }
+            },
+            { error ->
+                Log.e("SearchDebug", "Error loading saved IDs: ${error.message}")
+            }
+        )
+
+        Volley.newRequestQueue(this).add(request)
     }
 
     private fun loadUserLocation() {
@@ -106,7 +261,8 @@ class search : AppCompatActivity() {
 
                         Log.d("SearchDebug", "User location: $userLat, $userLng")
 
-                        // Load restaurants within 5km
+                        // Load saved restaurant IDs first, then restaurants
+                        loadSavedRestaurantIds()
                         loadRestaurants()
                     } else {
                         val message = json.optString("message", "Location not found")
@@ -151,8 +307,9 @@ class search : AppCompatActivity() {
 
                         for (i in 0 until restaurantsArray.length()) {
                             val item = restaurantsArray.getJSONObject(i)
+                            val restaurantId = item.getInt("restaurant_id")
                             val restaurant = Restaurant(
-                                restaurantId = item.getInt("restaurant_id"),
+                                restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
                                 latitude = item.getDouble("latitude"),
@@ -160,7 +317,8 @@ class search : AppCompatActivity() {
                                 imageUrl = item.optString("image_url", null),
                                 discount = item.optString("discount", null),
                                 distanceKm = item.getDouble("distance_km"),
-                                rating = item.optDouble("rating", 4.0).toFloat()
+                                rating = item.optDouble("rating", 4.0).toFloat(),
+                                isSaved = savedRestaurantIds.contains(restaurantId)
                             )
                             allRestaurants.add(restaurant)
                         }

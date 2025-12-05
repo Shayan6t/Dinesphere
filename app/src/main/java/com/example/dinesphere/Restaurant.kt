@@ -9,5 +9,6 @@ data class Restaurant(
     val imageUrl: String?,
     val discount: String?,
     val distanceKm: Double,
-    val rating: Float
+    val rating: Float,
+    var isSaved: Boolean = false
 )
