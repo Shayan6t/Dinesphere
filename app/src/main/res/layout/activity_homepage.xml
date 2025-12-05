@@ -7,640 +7,165 @@
     android:layout_height="match_parent"
     android:background="@color/black"
     tools:context=".homepage">
-    <ImageButton
-        android:id="@+id/address_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentLeft="true"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="15dp"
-        android:background="@drawable/map_pin_w"/>
-    <TextView
-        android:id="@+id/curr_address"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Time Square Way, Brooklyn Street"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:layout_marginLeft="15dp"
-        android:layout_toRightOf="@id/address_icon"
-        android:layout_alignTop="@id/address_icon"/>
-    <ImageButton
-        android:id="@+id/notification_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignParentRight="true"
-        android:layout_alignTop="@+id/address_icon"
-        android:layout_marginRight="15dp"
-        android:background="@drawable/notification_w"/>
-    <EditText
-        android:id="@+id/search_bar"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:fontFamily="@font/montserrat_med"
-        android:layout_below="@id/address_icon"
-        android:background="@drawable/edittext_box"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="40dp"/>
-    <ImageButton
-        android:id="@+id/search_mag_icon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/search_icon"
-        android:layout_alignTop="@id/search_bar"
-        android:layout_alignStart="@id/search_bar"
-        android:layout_margin="13dp"/>
-    <TextView
-        android:id="@+id/street_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Search for food source"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textSize="13sp"
-        android:layout_alignTop="@id/search_bar"
-        android:layout_toRightOf="@id/search_mag_icon"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="15dp"/>
-    <TextView
-        android:id="@+id/navigate_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#FFFFFF"
-        android:textSize="20sp"
-        android:gravity="center"
-        android:textAlignment="center"
-        android:layout_gravity="center"
-        android:layout_below="@id/search_bar"
-        android:layout_marginLeft="40dp"
-        android:layout_marginRight="40dp"
-        android:layout_marginTop="25dp"
-        android:text="@string/navigate_text"
-        android:fontFamily="@font/montserrat_med" />
-    <TextView
-        android:id="@+id/outlets_heading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Outlets around you"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        android:layout_below="@id/navigate_text"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="20dp"/>
-    <TextView
-        android:id="@+id/view_btn1"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View All"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="#F36600"
-        android:textSize="12sp"
-        android:layout_below="@id/navigate_text"
-        android:layout_marginRight="15dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="24dp"/>
-    <HorizontalScrollView
-        android:id="@+id/restaurantScrollView"
+
+    <!-- Top Bar (Fixed) -->
+    <RelativeLayout
+        android:id="@+id/top_bar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/outlets_heading"
-        android:scrollbars="none">
-        <LinearLayout
+        android:layout_alignParentTop="true"
+        android:paddingTop="50dp"
+        android:paddingBottom="10dp"
+        android:background="@color/black">
+
+        <ImageButton
+            android:id="@+id/address_icon"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:id="@+id/restaurant1"
-                android:layout_width="200dp"
-                android:layout_height="270dp"
-                android:orientation="vertical"
-                android:layout_marginVertical="10dp"
-                android:layout_marginHorizontal="15dp"
-                android:background="@drawable/edittext_box">
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <ImageView
-                        android:id="@+id/restaurantImage"
-                        android:layout_width="match_parent"
-                        android:layout_height="170dp"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:background="@drawable/info_box"
-                        android:src="@drawable/img" />
-                    <TextView
-                        android:id="@+id/discount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"
-                        android:background="@drawable/button_box_o"
-                        android:backgroundTint="#FC1818"
-                        android:padding="5dp"
-                        android:layout_margin="5dp"
-                        android:text="20% Zombie"
-                        android:fontFamily="@font/montserrat_med"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                    <LinearLayout
-                        android:id="@+id/info"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/restaurantImage"
-                        android:orientation="vertical"
-                        android:layout_marginTop="5dp"
-                        android:layout_alignParentBottom="true">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-                            <TextView
-                                android:id="@+id/restaurantName1"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="McDonald's"
-                                android:fontFamily="@font/montserrat_med"
-                                android:textColor="@color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                            <ImageView
-                                android:id="@+id/save1"
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/save_w"
-                                app:tint="@color/white" />
-                        </RelativeLayout>
-                        <TextView
-                            android:id="@+id/time"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="45mins Away"
-                            android:fontFamily="@font/montserrat_med"
-                            android:textColor="@color/white"
-                            android:textSize="11sp" />
-                        <TextView
-                            android:id="@+id/location1"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:drawableStart="@drawable/map_pin_w_s"
-                            android:drawablePadding="4dp"
-                            android:text="19 Greenwich Avenue"
-                            android:textColor="@color/white"
-                            android:textSize="12sp" />
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:orientation="horizontal">
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="@color/white" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </RelativeLayout>
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/restaurant2"
-                android:layout_width="200dp"
-                android:layout_height="270dp"
-                android:orientation="vertical"
-                android:layout_marginVertical="10dp"
-                android:layout_marginHorizontal="15dp"
-                android:background="@drawable/edittext_box">
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <ImageView
-                        android:id="@+id/restaurantImage2"
-                        android:layout_width="match_parent"
-                        android:layout_height="170dp"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:background="@drawable/info_box"
-                        android:src="@drawable/img" />
-                    <TextView
-                        android:id="@+id/discount2"
-                        android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"
-                        android:background="@drawable/button_box_o"
-                        android:backgroundTint="#FC1818"
-                        android:padding="5dp"
-                        android:layout_margin="5dp"
-                        android:text="50% Zombie"
-                        android:fontFamily="@font/montserrat_med"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                    <LinearLayout
-                        android:id="@+id/info2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/restaurantImage2"
-                        android:orientation="vertical"
-                        android:layout_marginTop="5dp"
-                        android:layout_alignParentBottom="true">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-                            <TextView
-                                android:id="@+id/restaurantName2"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Burger King"
-                                android:fontFamily="@font/montserrat_med"
-                                android:textColor="@color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                            <ImageView
-                                android:id="@+id/save2"
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/save_w"
-                                app:tint="@color/white" />
-                        </RelativeLayout>
-                        <TextView
-                            android:id="@+id/time2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="20mins Away"
-                            android:fontFamily="@font/montserrat_med"
-                            android:textColor="@color/white"
-                            android:textSize="11sp" />
-                        <TextView
-                            android:id="@+id/location2"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:drawableStart="@drawable/map_pin_w_s"
-                            android:drawablePadding="4dp"
-                            android:text="19 Greenwich Avenue"
-                            android:textColor="@color/white"
-                            android:textSize="12sp" />
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:orientation="horizontal">
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="@color/white" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </RelativeLayout>
-            </LinearLayout>
-        </LinearLayout>
-    </HorizontalScrollView>
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="15dp"
+            android:background="@drawable/map_pin_w"/>
 
-    <TextView
-        android:id="@+id/somethingNew_heading"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Try Something New!"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        android:layout_below="@id/restaurantScrollView"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="20dp"/>
-    <TextView
-        android:id="@+id/view_btn2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View All"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="#F36600"
-        android:textSize="12sp"
-        android:layout_below="@id/restaurantScrollView"
-        android:layout_marginRight="15dp"
-        android:layout_alignParentRight="true"
-        android:layout_marginTop="24dp"/>
-
-    <HorizontalScrollView
-        android:id="@+id/somethingNewScrollView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/somethingNew_heading"
-        android:scrollbars="none">
-        <LinearLayout
+        <TextView
+            android:id="@+id/curr_address"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:id="@+id/new1"
-                android:layout_width="200dp"
-                android:layout_height="270dp"
-                android:orientation="vertical"
-                android:layout_marginVertical="10dp"
-                android:layout_marginHorizontal="15dp"
-                android:background="@drawable/edittext_box">
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <ImageView
-                        android:id="@+id/restaurantImage3"
-                        android:layout_width="match_parent"
-                        android:layout_height="170dp"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:background="@drawable/info_box"
-                        android:src="@drawable/img" />
-                    <TextView
-                        android:id="@+id/discount3"
-                        android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"
-                        android:background="@drawable/button_box_o"
-                        android:backgroundTint="#FC1818"
-                        android:padding="5dp"
-                        android:layout_margin="5dp"
-                        android:text="20% Zombie"
-                        android:fontFamily="@font/montserrat_med"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                    <LinearLayout
-                        android:id="@+id/info3"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/restaurantImage3"
-                        android:orientation="vertical"
-                        android:layout_marginTop="5dp"
-                        android:layout_alignParentBottom="true">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-                            <TextView
-                                android:id="@+id/restaurantName3"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="McDonald's"
-                                android:fontFamily="@font/montserrat_med"
-                                android:textColor="@color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                            <ImageView
-                                android:id="@+id/save3"
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/save_w"
-                                app:tint="@color/white" />
-                        </RelativeLayout>
-                        <TextView
-                            android:id="@+id/time3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="45mins Away"
-                            android:fontFamily="@font/montserrat_med"
-                            android:textColor="@color/white"
-                            android:textSize="11sp" />
-                        <TextView
-                            android:id="@+id/location3"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:drawableStart="@drawable/map_pin_w_s"
-                            android:drawablePadding="4dp"
-                            android:text="19 Greenwich Avenue"
-                            android:textColor="@color/white"
-                            android:textSize="12sp" />
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:orientation="horizontal">
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="@color/white" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </RelativeLayout>
-            </LinearLayout>
+            android:text="Time Square Way, Brooklyn Street"
+            android:fontFamily="@font/montserrat_med"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            android:layout_marginLeft="15dp"
+            android:layout_toRightOf="@id/address_icon"
+            android:layout_alignTop="@id/address_icon"/>
 
-            <LinearLayout
-                android:id="@+id/new2"
-                android:layout_width="200dp"
-                android:layout_height="270dp"
-                android:orientation="vertical"
-                android:layout_marginVertical="10dp"
-                android:layout_marginHorizontal="15dp"
-                android:background="@drawable/edittext_box">
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-                    <ImageView
-                        android:id="@+id/restaurantImage4"
-                        android:layout_width="match_parent"
-                        android:layout_height="170dp"
-                        android:scaleType="centerCrop"
-                        android:clipToOutline="true"
-                        android:background="@drawable/info_box"
-                        android:src="@drawable/img" />
-                    <TextView
-                        android:id="@+id/discount4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="30dp"
-                        android:layout_alignParentTop="true"
-                        android:layout_alignParentEnd="true"
-                        android:background="@drawable/button_box_o"
-                        android:backgroundTint="#FC1818"
-                        android:padding="5dp"
-                        android:layout_margin="5dp"
-                        android:text="50% Zombie"
-                        android:fontFamily="@font/montserrat_med"
-                        android:textColor="@color/white"
-                        android:textSize="12sp"
-                        android:textStyle="bold" />
-                    <LinearLayout
-                        android:id="@+id/info4"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_below="@id/restaurantImage4"
-                        android:orientation="vertical"
-                        android:layout_marginTop="5dp"
-                        android:layout_alignParentBottom="true">
-                        <RelativeLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content">
-                            <TextView
-                                android:id="@+id/restaurantName4"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Burger King"
-                                android:fontFamily="@font/montserrat_med"
-                                android:textColor="@color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold" />
-                            <ImageView
-                                android:id="@+id/save4"
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:layout_alignParentEnd="true"
-                                android:layout_centerVertical="true"
-                                android:src="@drawable/save_w"
-                                app:tint="@color/white" />
-                        </RelativeLayout>
-                        <TextView
-                            android:id="@+id/time4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="20mins Away"
-                            android:fontFamily="@font/montserrat_med"
-                            android:textColor="@color/white"
-                            android:textSize="11sp" />
-                        <TextView
-                            android:id="@+id/location4"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:drawableStart="@drawable/map_pin_w_s"
-                            android:drawablePadding="4dp"
-                            android:text="19 Greenwich Avenue"
-                            android:textColor="@color/white"
-                            android:textSize="12sp" />
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:orientation="horizontal">
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="#45B884" />
-                            <ImageView
-                                android:layout_width="14dp"
-                                android:layout_height="14dp"
-                                android:layout_marginStart="2dp"
-                                android:src="@drawable/star"
-                                app:tint="@color/white" />
-                        </LinearLayout>
-                    </LinearLayout>
-                </RelativeLayout>
-            </LinearLayout>
+        <ImageButton
+            android:id="@+id/notification_icon"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignTop="@+id/address_icon"
+            android:layout_marginRight="15dp"
+            android:background="@drawable/notification_w"/>
+    </RelativeLayout>
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:id="@+id/scroll_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/top_bar"
+        android:layout_above="@id/bottom_nav"
+        android:scrollbars="none"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/search_bar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:fontFamily="@font/montserrat_med"
+                android:background="@drawable/edittext_box"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="20dp"/>
+
+            <ImageButton
+                android:id="@+id/search_mag_icon"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/search_icon"
+                android:layout_marginTop="-37dp"
+                android:layout_marginLeft="28dp"/>
+
+            <TextView
+                android:id="@+id/street_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Search for food source"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="@color/white"
+                android:textSize="13sp"
+                android:layout_marginLeft="70dp"
+                android:layout_marginTop="-25dp"/>
+
+            <TextView
+                android:id="@+id/navigate_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#FFFFFF"
+                android:textSize="20sp"
+                android:gravity="center"
+                android:textAlignment="center"
+                android:layout_gravity="center"
+                android:layout_marginLeft="40dp"
+                android:layout_marginRight="40dp"
+                android:layout_marginTop="25dp"
+                android:text="@string/navigate_text"
+                android:fontFamily="@font/montserrat_med" />
+
+            <!-- Restaurants within 5km section -->
+            <TextView
+                android:id="@+id/outlets_heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Restaurants within 5km"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="20dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/restaurantRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:clipToPadding="false"
+                android:paddingEnd="15dp"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal" />
+
+            <!-- All Restaurants section -->
+            <TextView
+                android:id="@+id/somethingNew_heading"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="All Restaurants"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="20dp"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/allRestaurantRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:layout_marginBottom="20dp"
+                android:clipToPadding="false"
+                android:paddingEnd="15dp"
+                android:nestedScrollingEnabled="false"
+                android:orientation="horizontal" />
+
         </LinearLayout>
-    </HorizontalScrollView>
+    </ScrollView>
 
+    <!-- Bottom Navigation Bar (Fixed) -->
     <LinearLayout
+        android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="@drawable/bottom_bar"
-        android:padding="15dp"
+        android:padding="10dp"
         android:weightSum="4">
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -665,6 +190,7 @@
                 android:background="@drawable/button_box_o"
                 android:layout_marginTop="3dp" />
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -685,6 +211,7 @@
                 android:textSize="14sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -705,6 +232,7 @@
                 android:textSize="14sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"

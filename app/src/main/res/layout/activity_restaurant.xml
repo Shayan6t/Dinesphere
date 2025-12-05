@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".restaurant">
+    tools:context=".Restaurant">
     <ImageView
         android:id="@+id/restaurant_img"
         android:layout_width="match_parent"
