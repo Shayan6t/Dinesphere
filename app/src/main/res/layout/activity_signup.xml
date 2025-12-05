@@ -294,6 +294,7 @@
             android:fontFamily="@font/montserrat_med"
             android:textSize="14sp" />
         <TextView
+            android:id="@+id/tv_login_link"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Login"
