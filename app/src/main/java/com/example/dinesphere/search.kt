@@ -1,20 +1,218 @@
 package com.example.dinesphere
 
 import android.os.Bundle
-import androidx.activity.enableEdgeToEdge
+import android.text.Editable
+import android.text.TextWatcher
+import android.util.Log
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.toolbox.StringRequest
+import com.android.volley.toolbox.Volley
+import org.json.JSONObject
 
 class search : AppCompatActivity() {
+
+    private lateinit var searchBar: EditText
+    private lateinit var backButton: ImageButton
+    private lateinit var restaurantsRecycler: RecyclerView
+
+    private lateinit var restaurantsAdapter: RestaurantAdapter
+    private lateinit var databaseHelper: DatabaseHelper
+
+    private val allRestaurants = mutableListOf<Restaurant>()
+    private val filteredRestaurants = mutableListOf<Restaurant>()
+
+    private var userLat: Double = 0.0
+    private var userLng: Double = 0.0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_search)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+
+        databaseHelper = DatabaseHelper(this)
+
+        // Initialize views
+        searchBar = findViewById(R.id.search_bar)
+        backButton = findViewById(R.id.back)
+        restaurantsRecycler = findViewById(R.id.restaurants_recycler)
+
+        // Back button
+        backButton.setOnClickListener {
+            finish()
+        }
+
+        // Setup RecyclerViews
+        setupRecyclerViews()
+
+        // Load user location and restaurants
+        loadUserLocation()
+
+        // Search functionality
+        searchBar.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                filterRestaurants(s.toString())
+            }
+        })
+    }
+
+    private fun setupRecyclerViews() {
+        // Restaurants RecyclerView (Horizontal)
+        restaurantsRecycler.layoutManager = LinearLayoutManager(
+            this,
+            LinearLayoutManager.HORIZONTAL,
+            false
+        )
+        restaurantsAdapter = RestaurantAdapter(filteredRestaurants) { restaurant ->
+            onRestaurantClick(restaurant)
+        }
+        restaurantsRecycler.adapter = restaurantsAdapter
+    }
+
+    private fun onRestaurantClick(restaurant: Restaurant) {
+        Toast.makeText(this, "Opening: ${restaurant.businessName}", Toast.LENGTH_SHORT).show()
+        // TODO: Navigate to restaurant detail screen
+    }
+
+    private fun loadUserLocation() {
+        val userId = databaseHelper.getUserId()
+
+        if (userId == null) {
+            Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val url = "${Global.BASE_URL}get_user_location.php?user_id=$userId"
+        Log.d("SearchDebug", "Loading user location from: $url")
+
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    Log.d("SearchDebug", "Location response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        val data = json.getJSONObject("data")
+                        userLat = data.getDouble("latitude")
+                        userLng = data.getDouble("longitude")
+
+                        Log.d("SearchDebug", "User location: $userLat, $userLng")
+
+                        // Load restaurants within 5km
+                        loadRestaurants()
+                    } else {
+                        val message = json.optString("message", "Location not found")
+                        Log.e("SearchDebug", "Error: $message")
+                        Toast.makeText(this, "Please set your location first", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("SearchDebug", "Error parsing location: ${e.message}")
+                    Toast.makeText(this, "Error loading location", Toast.LENGTH_SHORT).show()
+                }
+            },
+            { error ->
+                Log.e("SearchDebug", "Location fetch error: ${error.message}")
+                Toast.makeText(this, "Failed to load location", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun loadRestaurants() {
+        if (userLat == 0.0 || userLng == 0.0) {
+            Log.e("SearchDebug", "Invalid user location: $userLat, $userLng")
+            return
+        }
+
+        val url = "${Global.BASE_URL}get_restaurants.php?latitude=$userLat&longitude=$userLng&max_distance=5"
+        Log.d("SearchDebug", "Loading restaurants from: $url")
+
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    Log.d("SearchDebug", "Restaurants response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        val restaurantsArray = json.getJSONArray("restaurants")
+                        allRestaurants.clear()
+
+                        for (i in 0 until restaurantsArray.length()) {
+                            val item = restaurantsArray.getJSONObject(i)
+                            val restaurant = Restaurant(
+                                restaurantId = item.getInt("restaurant_id"),
+                                businessName = item.getString("business_name"),
+                                address = item.getString("address"),
+                                latitude = item.getDouble("latitude"),
+                                longitude = item.getDouble("longitude"),
+                                imageUrl = item.optString("image_url", null),
+                                discount = item.optString("discount", null),
+                                distanceKm = item.getDouble("distance_km"),
+                                rating = item.optDouble("rating", 4.0).toFloat()
+                            )
+                            allRestaurants.add(restaurant)
+                        }
+
+                        Log.d("SearchDebug", "Loaded ${allRestaurants.size} restaurants")
+
+                        // Initially show all restaurants
+                        filteredRestaurants.clear()
+                        filteredRestaurants.addAll(allRestaurants)
+                        restaurantsAdapter.notifyDataSetChanged()
+
+                        if (allRestaurants.isEmpty()) {
+                            Toast.makeText(this, "No restaurants found within 5km", Toast.LENGTH_SHORT).show()
+                        }
+                    } else {
+                        val message = json.optString("message", "Failed to load restaurants")
+                        Log.e("SearchDebug", "Error: $message")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("SearchDebug", "Error parsing response: ${e.message}")
+                }
+            },
+            { error ->
+                Log.e("SearchDebug", "Volley error: ${error.message}")
+                Toast.makeText(this, "Failed to load restaurants", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun filterRestaurants(query: String) {
+        filteredRestaurants.clear()
+
+        if (query.isEmpty()) {
+            // Show all restaurants if search is empty
+            filteredRestaurants.addAll(allRestaurants)
+        } else {
+            // Filter by restaurant name (case-insensitive)
+            val lowerQuery = query.lowercase()
+            filteredRestaurants.addAll(
+                allRestaurants.filter { restaurant ->
+                    restaurant.businessName.lowercase().contains(lowerQuery)
+                }
+            )
+        }
+
+        restaurantsAdapter.notifyDataSetChanged()
+
+        if (filteredRestaurants.isEmpty() && query.isNotEmpty()) {
+            Toast.makeText(this, "No restaurants found matching '$query'", Toast.LENGTH_SHORT).show()
         }
     }
 }
