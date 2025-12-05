@@ -46,4 +46,5 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     implementation("com.android.volley:volley:1.2.1")
+    implementation("com.google.android.gms:play-services-location:21.0.1")
 }

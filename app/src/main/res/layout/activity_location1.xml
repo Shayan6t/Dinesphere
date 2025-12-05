@@ -18,6 +18,7 @@
         android:textSize="20sp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="70dp"/>
+
     <ImageButton
         android:id="@+id/back"
         android:layout_width="wrap_content"
@@ -27,6 +28,8 @@
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="2dp"/>
+
+    <!-- UPDATED EDIT TEXT -->
     <EditText
         android:id="@+id/edit_location"
         android:layout_width="match_parent"
@@ -36,7 +39,16 @@
         android:background="@drawable/edittext_box"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginTop="40dp"/>
+        android:layout_marginTop="40dp"
+        android:textColor="@color/white"
+        android:paddingStart="40dp"
+        android:paddingEnd="50dp"
+        android:textSize="14sp"
+        android:inputType="textPostalAddress|textNoSuggestions"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
     <ImageButton
         android:id="@+id/map_pin"
         android:layout_width="wrap_content"
@@ -45,6 +57,7 @@
         android:layout_alignTop="@id/edit_location"
         android:layout_alignStart="@id/edit_location"
         android:layout_margin="13dp"/>
+
     <ImageButton
         android:id="@+id/list_down"
         android:layout_width="wrap_content"
@@ -53,17 +66,21 @@
         android:layout_alignTop="@id/edit_location"
         android:layout_alignEnd="@id/edit_location"
         android:layout_margin="13dp"/>
+
     <TextView
         android:id="@+id/address_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Time square way, brooklyn street"
+        android:text=""
         android:fontFamily="@font/montserrat_med"
         android:textColor="@color/white"
         android:textSize="14sp"
         android:layout_alignTop="@id/edit_location"
         android:layout_toRightOf="@id/map_pin"
-        android:layout_marginTop="15dp"/>
+        android:layout_marginTop="15dp"
+        android:visibility="gone"/>
+    <!-- Hid this textview since the address now shows inside the EditText box -->
+
     <ImageView
         android:id="@+id/big_loc_img"
         android:layout_width="wrap_content"
@@ -72,6 +89,7 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="100dp"
         android:src="@drawable/big_loc"/>
+
     <TextView
         android:id="@+id/updated_text"
         android:layout_width="290dp"
@@ -84,15 +102,17 @@
         android:gravity="center"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"/>
-   <ImageButton
-       android:id="@+id/change_btn"
-       android:layout_width="match_parent"
-       android:layout_height="50dp"
-       android:layout_below="@id/updated_text"
-       android:background="@drawable/button_box_o"
-       android:layout_marginLeft="15dp"
-       android:layout_marginRight="15dp"
-       android:layout_marginTop="180dp"/>
+
+    <ImageButton
+        android:id="@+id/change_btn"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/button_box_o"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"/>
+
     <TextView
         android:id="@+id/change_text"
         android:layout_width="wrap_content"
