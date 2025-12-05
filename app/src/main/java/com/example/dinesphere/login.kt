@@ -27,7 +27,7 @@ class login : AppCompatActivity() {
     private lateinit var loginBtn: RelativeLayout
     private lateinit var passwordToggle: ImageView
     private lateinit var signUpLink: TextView
-    private lateinit var forgotPasswordLink: TextView // Added variable
+    private lateinit var forgotPasswordLink: TextView
     private lateinit var databaseHelper: DatabaseHelper
 
     private var isPasswordVisible = false
@@ -57,7 +57,7 @@ class login : AppCompatActivity() {
         loginBtn = findViewById(R.id.login_btn)
         passwordToggle = findViewById(R.id.password_toggle1)
         signUpLink = findViewById(R.id.tv_signup_link)
-        forgotPasswordLink = findViewById(R.id.forget_password) // Initialize view
+        forgotPasswordLink = findViewById(R.id.forget_password)
 
         // Prevent click stealing by the background image button
         findViewById<View>(R.id.login_btn_back).isClickable = false
@@ -176,7 +176,8 @@ class login : AppCompatActivity() {
     }
 
     private fun navigateToHome() {
-        val intent = Intent(this, location1::class.java)
+        // Navigate to homepage instead of location1
+        val intent = Intent(this, homepage::class.java)
         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
         startActivity(intent)
         finish()
