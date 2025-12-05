@@ -26,14 +26,17 @@
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="2dp"/>
-    <ImageView
+    <org.osmdroid.views.MapView
         android:id="@+id/map"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="350dp"
         android:layout_below="@id/heading"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
-        android:src="@drawable/map_img"/>
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"/>
+
+    <!-- STREET INPUT -->
     <EditText
         android:id="@+id/edit_street"
         android:layout_width="match_parent"
@@ -43,7 +46,15 @@
         android:background="@drawable/edittext_box"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="10dp"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:paddingStart="50dp"
+        android:paddingEnd="50dp"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
     <ImageButton
         android:id="@+id/road_sym"
         android:layout_width="wrap_content"
@@ -61,6 +72,8 @@
         android:layout_alignTop="@id/edit_street"
         android:layout_alignEnd="@id/edit_street"
         android:layout_margin="13dp"/>
+
+    <!-- Set visibility to gone so it doesn't overlap the input -->
     <TextView
         android:id="@+id/street_text"
         android:layout_width="wrap_content"
@@ -69,11 +82,13 @@
         android:fontFamily="@font/montserrat_med"
         android:textColor="@color/white"
         android:textSize="14sp"
+        android:visibility="gone"
         android:layout_alignTop="@id/edit_street"
         android:layout_toRightOf="@id/road_sym"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"/>
 
+    <!-- HOUSE INPUT -->
     <EditText
         android:id="@+id/edit_house"
         android:layout_width="match_parent"
@@ -83,7 +98,15 @@
         android:background="@drawable/edittext_box"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginTop="20dp"/>
+        android:layout_marginTop="10dp"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        android:paddingStart="50dp"
+        android:paddingEnd="50dp"
+        android:maxLines="1"
+        android:singleLine="true"
+        android:ellipsize="end"/>
+
     <ImageButton
         android:id="@+id/house_sym"
         android:layout_width="wrap_content"
@@ -100,6 +123,8 @@
         android:layout_alignTop="@id/edit_house"
         android:layout_alignEnd="@id/edit_house"
         android:layout_margin="13dp"/>
+
+    <!-- Set visibility to gone so it doesn't overlap the input -->
     <TextView
         android:id="@+id/house_text"
         android:layout_width="wrap_content"
@@ -108,19 +133,21 @@
         android:fontFamily="@font/montserrat_med"
         android:textColor="@color/white"
         android:textSize="14sp"
+        android:visibility="gone"
         android:layout_alignTop="@id/edit_house"
         android:layout_toRightOf="@id/road_sym"
         android:layout_marginLeft="15dp"
         android:layout_marginTop="15dp"/>
+
     <ImageButton
         android:id="@+id/save_btn"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_below="@id/edit_house"
+        android:layout_above="@id/choose_text"
         android:background="@drawable/button_box_o"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginTop="60dp"/>
+        android:layout_marginBottom="20dp"/>
     <TextView
         android:id="@+id/save_text"
         android:layout_width="wrap_content"
@@ -142,8 +169,8 @@
         android:fontFamily="@font/montserrat_med"
         android:textColor="#F36600"
         android:textSize="16sp"
-        android:layout_below="@id/save_btn"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="50dp"/>
 
 </RelativeLayout>

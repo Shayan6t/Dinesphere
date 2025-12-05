@@ -1,6 +1,7 @@
 package com.example.dinesphere
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
@@ -68,16 +69,18 @@ class location1 : AppCompatActivity() {
             finish()
         }
 
-        // Change/Save Button (Manual save)
+        // --- UPDATED: Change Button Navigates to Location2 ---
         changeBtn.setOnClickListener {
-            val manualAddress = editLocation.text.toString().trim()
-            if (manualAddress.isNotEmpty()) {
-                val lat = currentLat ?: 0.0
-                val lng = currentLng ?: 0.0
-                updateLocationInDB(lat, lng, manualAddress)
-            } else {
-                Toast.makeText(this, "Please enter an address", Toast.LENGTH_SHORT).show()
+            val currentAddress = editLocation.text.toString().trim()
+
+            val intent = Intent(this, location2::class.java)
+            // Pass the address and coordinates to the next screen
+            intent.putExtra("CURRENT_ADDRESS", currentAddress)
+            if (currentLat != null && currentLng != null) {
+                intent.putExtra("LAT", currentLat)
+                intent.putExtra("LNG", currentLng)
             }
+            startActivity(intent)
         }
 
         // List Down Button - Show Nearby Locations
@@ -167,7 +170,6 @@ class location1 : AppCompatActivity() {
         Thread {
             try {
                 val geocoder = Geocoder(this, Locale.getDefault())
-                // Fetch 5 nearby address variations
                 val addresses = geocoder.getFromLocation(lat, lng, 5)
 
                 runOnUiThread {
@@ -175,21 +177,12 @@ class location1 : AppCompatActivity() {
                         val listAddresses = addresses.map { it.getAddressLine(0) }
 
                         val listPopupWindow = ListPopupWindow(this)
-
-                        // Anchor directly to the edit text box
                         listPopupWindow.anchorView = findViewById(R.id.edit_location)
-
-                        // Force width to match the input box so it looks centered and full width
                         listPopupWindow.width = findViewById<View>(R.id.edit_location).width
-
-                        // Set Background Black
                         listPopupWindow.setBackgroundDrawable(ColorDrawable(Color.BLACK))
 
-                        // Use Custom Item Layout (Black bg, Centered text)
                         val adapter = ArrayAdapter(this, R.layout.item_dropdown, listAddresses)
                         listPopupWindow.setAdapter(adapter)
-
-                        // Optional: Ensure it overlaps nicely
                         listPopupWindow.isModal = true
 
                         listPopupWindow.setOnItemClickListener { _, _, position, _ ->
@@ -200,9 +193,7 @@ class location1 : AppCompatActivity() {
                             updateLocationInDB(lat, lng, selectedAddress)
                             listPopupWindow.dismiss()
                         }
-
                         listPopupWindow.show()
-
                     } else {
                         Toast.makeText(this, "No specific locations found", Toast.LENGTH_SHORT).show()
                     }
