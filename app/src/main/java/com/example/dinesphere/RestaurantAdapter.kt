@@ -49,7 +49,7 @@ class RestaurantAdapter(
             // Show discount if available
             if (!restaurant.discount.isNullOrEmpty()) {
                 discount.visibility = View.VISIBLE
-                discount.text = restaurant.discount
+                discount.text = "${restaurant.discount}% off"
             } else {
                 discount.visibility = View.GONE
             }
