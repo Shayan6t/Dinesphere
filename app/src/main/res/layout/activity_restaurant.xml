@@ -8,7 +8,7 @@
     android:background="@color/black"
     tools:context=".RestaurantActivity">
 
-    <!-- 1. Top Image (Fixed or Scrollable - kept fixed at top here) -->
+    <!-- 1. Top Image (Fixed at top) -->
     <ImageView
         android:id="@+id/restaurant_img"
         android:layout_width="match_parent"
@@ -17,7 +17,7 @@
         android:scaleType="centerCrop"
         android:layout_alignParentTop="true"/>
 
-    <!-- Back Button (Floating on top) -->
+    <!-- Back Button -->
     <ImageButton
         android:id="@+id/back"
         android:layout_width="wrap_content"
@@ -40,7 +40,7 @@
             android:orientation="vertical"
             android:paddingBottom="20dp">
 
-            <!-- Name and Save Button Row -->
+            <!-- Name and Save Button -->
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -82,7 +82,7 @@
                 android:textSize="12sp"
                 android:layout_marginLeft="15dp"/>
 
-            <!-- Rating Row -->
+            <!-- Rating & Time -->
             <LinearLayout
                 android:id="@+id/rating"
                 android:layout_width="wrap_content"
@@ -128,7 +128,7 @@
                     android:id="@+id/deliveryTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="45mins"
+                    android:text="-- mins"
                     android:textColor="@color/white"
                     android:textSize="12sp"
                     android:fontFamily="@font/montserrat_med"
@@ -150,11 +150,16 @@
                     android:layout_weight="3"
                     android:orientation="horizontal"
                     android:gravity="center_vertical">
+
+                    <!-- CAR -->
                     <LinearLayout
+                        android:id="@+id/btn_car"
                         android:layout_width="60dp"
                         android:layout_height="35dp"
                         android:background="@drawable/pill_back"
                         android:gravity="center"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:layout_marginEnd="12dp">
                         <ImageView
                             android:layout_width="wrap_content"
@@ -162,11 +167,16 @@
                             android:src="@drawable/car"
                             app:tint="@color/white" />
                     </LinearLayout>
+
+                    <!-- CYCLE -->
                     <LinearLayout
+                        android:id="@+id/btn_cycle"
                         android:layout_width="60dp"
                         android:layout_height="35dp"
                         android:background="@drawable/pill_back"
                         android:gravity="center"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:layout_marginEnd="12dp"
                         android:backgroundTint="#C7C7C7">
                         <ImageView
@@ -174,11 +184,16 @@
                             android:layout_height="wrap_content"
                             android:src="@drawable/cycle"/>
                     </LinearLayout>
+
+                    <!-- WALK -->
                     <LinearLayout
+                        android:id="@+id/btn_walk"
                         android:layout_width="60dp"
                         android:layout_height="35dp"
                         android:background="@drawable/pill_back"
                         android:gravity="center"
+                        android:clickable="true"
+                        android:focusable="true"
                         android:backgroundTint="#C7C7C7">
                         <ImageView
                             android:layout_width="wrap_content"
@@ -186,6 +201,8 @@
                             android:src="@drawable/walk" />
                     </LinearLayout>
                 </LinearLayout>
+
+                <!-- CALL BUTTON -->
                 <LinearLayout
                     android:layout_width="20dp"
                     android:layout_height="45dp"
@@ -280,7 +297,7 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- 3. Bottom Navigation Bar (Fixed at Bottom) -->
+    <!-- 3. Bottom Navigation Bar -->
     <LinearLayout
         android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
