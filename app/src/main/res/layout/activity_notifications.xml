@@ -5,7 +5,8 @@
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/black"
-    tools:context=".notifications">
+    tools:context=".notifications"
+    android:id="@+id/main">
     <TextView
         android:id="@+id/notificationTitle"
         android:layout_width="wrap_content"

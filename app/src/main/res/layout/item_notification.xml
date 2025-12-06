@@ -12,11 +12,11 @@
 
     <ImageView
         android:id="@+id/notificationIcon"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:src="@drawable/notifications"
-        app:tint="@color/orange"
-        android:layout_gravity="center"/>
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -25,6 +25,16 @@
         android:orientation="vertical"
         android:layout_marginHorizontal="20dp"
         android:layout_gravity="center">
+
+        <TextView
+            android:id="@+id/notificationBusinessName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Restaurant Name"
+            android:fontFamily="@font/montserrat_med"
+            android:textColor="#F48331"
+            android:textSize="12sp"
+            android:layout_marginBottom="3dp"/>
 
         <TextView
             android:id="@+id/notificationItemTitle"
@@ -41,7 +51,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="5dp"
-            android:textColor="#F48331"
+            android:textColor="#CCCCCC"
             android:text="Make yourself happy with these discount codes."
             android:fontFamily="@font/montserrat_med"
             android:textSize="14sp"/>

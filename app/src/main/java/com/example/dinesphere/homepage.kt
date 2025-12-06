@@ -54,6 +54,9 @@ class homepage : AppCompatActivity() {
             FCMTokenManager.initializeFCM(this, userId)
         }
 
+        val notificationButton: ImageButton = findViewById(R.id.notification_icon) // adjust ID as needed
+
+
         // Initialize views
         currAddress = findViewById(R.id.curr_address)
         addressIcon = findViewById(R.id.address_icon)
@@ -91,6 +94,11 @@ class homepage : AppCompatActivity() {
         // Saved navigation click
         navSaved.setOnClickListener {
             val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+
+        notificationButton.setOnClickListener {
+            val intent = Intent(this, notifications::class.java)
             startActivity(intent)
         }
 
