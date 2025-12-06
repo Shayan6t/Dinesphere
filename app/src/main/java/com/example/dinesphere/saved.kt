@@ -161,7 +161,7 @@ class saved : AppCompatActivity() {
             return
         }
 
-        val url = "${Global.BASE_URL}save(delete).php"
+        val url = "${Global.BASE_URL}saved(delete).php"
         Log.d("SavedDebug", "Unsaving restaurant: ${restaurant.businessName}")
 
         val request = object : StringRequest(
