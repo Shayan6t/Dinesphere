@@ -2,23 +2,24 @@ package com.example.dinesphere
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
+import android.util.Base64
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.android.volley.Request
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.squareup.picasso.Picasso
 import org.json.JSONObject
+import java.io.ByteArrayOutputStream
 
 class edit_profile : AppCompatActivity() {
 
@@ -33,8 +34,8 @@ class edit_profile : AppCompatActivity() {
     private lateinit var saveBtnBack: ImageButton
 
     private var currentUserId: String? = null
-    // This variable will hold the valid URL (either old one from DB or new simulated one).
     private var currentProfileImageUrl: String? = null
+    private var selectedImageBase64: String? = null // Store new image as base64
 
     // Activity launcher for picking images
     private val imagePickerLauncher = registerForActivityResult(
@@ -43,15 +44,18 @@ class edit_profile : AppCompatActivity() {
         if (result.resultCode == Activity.RESULT_OK) {
             val imageUri: Uri? = result.data?.data
             if (imageUri != null) {
-                // --- CRITICAL: OVERWRITE URL WITH NEW SIMULATED URL ---
-                // This simulates the actual upload response.
-                val simulatedCloudinaryUrl = "https://res.cloudinary.com/dinesphere/image/upload/v1/users/profile_new_selected_${currentUserId}_${System.currentTimeMillis()}"
-                currentProfileImageUrl = simulatedCloudinaryUrl
+                try {
+                    // Convert selected image to Base64
+                    val bitmap = MediaStore.Images.Media.getBitmap(contentResolver, imageUri)
+                    selectedImageBase64 = convertBitmapToBase64(bitmap)
 
-                // Display new image locally
-                profileImage.setImageURI(imageUri)
+                    // Display image locally
+                    profileImage.setImageBitmap(bitmap)
 
-                Toast.makeText(this, "Image selected. Press Save to finalize.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, "Image selected. Press Save to upload.", Toast.LENGTH_SHORT).show()
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error loading image: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
@@ -80,7 +84,6 @@ class edit_profile : AppCompatActivity() {
         profileImage = findViewById(R.id.profileImage)
         val cameraIcon = findViewById<ImageView>(R.id.cameraIcon)
 
-
         saveBtnBack.isClickable = false
         emailText.isEnabled = false
 
@@ -106,6 +109,14 @@ class edit_profile : AppCompatActivity() {
         imagePickerLauncher.launch(intent)
     }
 
+    private fun convertBitmapToBase64(bitmap: Bitmap): String {
+        val byteArrayOutputStream = ByteArrayOutputStream()
+        // Compress to JPEG with 80% quality
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, byteArrayOutputStream)
+        val byteArray = byteArrayOutputStream.toByteArray()
+        return Base64.encodeToString(byteArray, Base64.DEFAULT)
+    }
+
     private fun loadProfileDetails(userId: String) {
         val url = "${Global.BASE_URL}get_user_details.php?user_id=$userId"
 
@@ -127,15 +138,17 @@ class edit_profile : AppCompatActivity() {
                         // Load Profile Image
                         val imageUrl = user.optString("profile_image_url")
                         if (!imageUrl.isNullOrEmpty()) {
-                            // Store existing URL into the current URL holder
                             currentProfileImageUrl = imageUrl
-                            Picasso.get().load(imageUrl)
+                            Picasso.get()
+                                .load(imageUrl)
+                                .memoryPolicy(com.squareup.picasso.MemoryPolicy.NO_CACHE)
+                                .networkPolicy(com.squareup.picasso.NetworkPolicy.NO_CACHE)
                                 .placeholder(R.drawable.avatar)
                                 .error(R.drawable.avatar)
                                 .into(profileImage)
                         } else {
-                            // If no URL exists, ensure our holder is null
                             currentProfileImageUrl = null
+                            profileImage.setImageResource(R.drawable.avatar)
                         }
                     } else {
                         Toast.makeText(this, "Failed to load user data.", Toast.LENGTH_SHORT).show()
@@ -162,11 +175,10 @@ class edit_profile : AppCompatActivity() {
             return
         }
 
-        // Pass the CURRENT value of currentProfileImageUrl (new or old)
-        updateProfile(firstName, lastName, phone, gender, currentProfileImageUrl)
+        updateProfile(firstName, lastName, phone, gender)
     }
 
-    private fun updateProfile(firstName: String, lastName: String, phone: String, gender: String, imageUrl: String?) {
+    private fun updateProfile(firstName: String, lastName: String, phone: String, gender: String) {
         val url = "${Global.BASE_URL}update_profile.php"
         Toast.makeText(this, "Saving changes...", Toast.LENGTH_SHORT).show()
 
@@ -176,8 +188,13 @@ class edit_profile : AppCompatActivity() {
                 try {
                     val json = JSONObject(response)
                     if (json.optBoolean("success")) {
+                        // Update local URL if new image was uploaded
+                        if (json.has("image_url")) {
+                            currentProfileImageUrl = json.getString("image_url")
+                        }
+
                         Toast.makeText(this, "Profile Saved!", Toast.LENGTH_LONG).show()
-                        finish() // Go back to the Profile display page
+                        finish()
                     } else {
                         Toast.makeText(this, "Failed to save: ${json.optString("message")}", Toast.LENGTH_LONG).show()
                     }
@@ -196,8 +213,15 @@ class edit_profile : AppCompatActivity() {
                 params["last_name"] = lastName
                 params["phone"] = phone
                 params["gender"] = gender
-                // Send the current URL. If null, it sends empty string, which PHP treats as null.
-                params["profile_image_url"] = imageUrl ?: ""
+
+                // If new image was selected, send base64
+                if (!selectedImageBase64.isNullOrEmpty()) {
+                    params["base64_image"] = selectedImageBase64!!
+                } else if (!currentProfileImageUrl.isNullOrEmpty()) {
+                    // Keep existing URL
+                    params["profile_image_url"] = currentProfileImageUrl!!
+                }
+
                 return params
             }
         }

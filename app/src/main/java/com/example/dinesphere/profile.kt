@@ -134,9 +134,12 @@ class profile : AppCompatActivity() {
                         // 3. Set Location
                         locationView.text = address
 
-                        // 4. Load Profile Image using Picasso
+                        
                         if (!profileImageUrl.isNullOrEmpty()) {
-                            Picasso.get().load(profileImageUrl)
+                            Picasso.get()
+                                .load(profileImageUrl)
+                                .memoryPolicy(com.squareup.picasso.MemoryPolicy.NO_CACHE)
+                                .networkPolicy(com.squareup.picasso.NetworkPolicy.NO_CACHE)
                                 .placeholder(R.drawable.avatar)
                                 .error(R.drawable.avatar)
                                 .into(profileImageView)
