@@ -16,10 +16,7 @@ object FCMTokenManager {
 
     private const val TAG = "FCMTokenManager"
 
-    /**
-     * Initialize FCM - Get token and send to backend
-     * Call this after successful login
-     */
+
     fun initializeFCM(context: Context, userId: String) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
