@@ -6,271 +6,283 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/black"
-    tools:context=".Restaurant">
+    tools:context=".RestaurantActivity">
+
+    <!-- 1. Top Image (Fixed or Scrollable - kept fixed at top here) -->
     <ImageView
         android:id="@+id/restaurant_img"
         android:layout_width="match_parent"
-        android:layout_height="380dp"
+        android:layout_height="320dp"
         android:src="@drawable/img1"
         android:scaleType="centerCrop"
-        android:layout_marginTop="20dp"/>
+        android:layout_alignParentTop="true"/>
+
+    <!-- Back Button (Floating on top) -->
     <ImageButton
         android:id="@+id/back"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/chevron_left"
-        android:layout_alignParentLeft="true"
         android:layout_marginLeft="20dp"
         android:layout_marginTop="50dp"/>
 
-    <TextView
-        android:id="@+id/name"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="McDonald's, Brooklyn"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textStyle="bold"
-        android:textSize="18sp"
-        android:layout_below="@id/restaurant_img"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="15dp"/>
-    <ImageView
-        android:id="@+id/save_btn"
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:layout_alignParentEnd="true"
-        android:layout_alignTop="@id/name"
-        android:src="@drawable/save_w"
-        android:layout_marginRight="15dp"
-        app:tint="@color/white" />
-    <TextView
-        android:id="@+id/location"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:drawableStart="@drawable/map_pin_w_s"
-        android:fontFamily="@font/montserrat_med"
-        android:drawablePadding="4dp"
-        android:text="19 Greenwich Avenue, Time Squ...."
-        android:textColor="@color/white"
-        android:textSize="12sp"
-        android:layout_below="@id/name"
-        android:layout_marginLeft="15dp"/>
-    <LinearLayout
-        android:id="@+id/rating"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:layout_below="@id/location"
-        android:layout_marginLeft="15dp"
-        android:layout_marginTop="10dp">
-        <TextView
-            android:id="@+id/ratingScore"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="4.0"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:fontFamily="@font/montserrat_med"
-            android:textStyle="bold" />
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginStart="4dp">
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:src="@drawable/star"
-                app:tint="#45B884" />
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/star"
-                app:tint="#45B884" />
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/star"
-                app:tint="#45B884" />
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/star"
-                app:tint="#45B884" />
-            <ImageView
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:layout_marginStart="2dp"
-                android:src="@drawable/star"
-                app:tint="@color/white" />
-        </LinearLayout>
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="●     "
-            android:textColor="@color/white"
-            android:textSize="6sp"
-            android:layout_marginStart="8dp"
-            android:layout_marginEnd="8dp" />
-        <ImageView
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@drawable/car"
-            app:tint="@color/white" />
-        <TextView
-            android:id="@+id/deliveryTime"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="45mins"
-            android:textColor="@color/white"
-            android:textSize="12sp"
-            android:fontFamily="@font/montserrat_med"
-            android:layout_marginStart="4dp" />
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/trans_btns"
+    <!-- 2. Scrollable Content Area -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@color/black"
-        android:padding="15dp"
-        android:gravity="center_vertical"
-        android:layout_below="@id/rating"
-        android:weightSum="4">
+        android:layout_height="match_parent"
+        android:layout_below="@id/restaurant_img"
+        android:layout_above="@id/bottom_nav"
+        android:fillViewport="true">
+
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="3"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            <LinearLayout
-                android:layout_width="60dp"
-                android:layout_height="35dp"
-                android:background="@drawable/pill_back"
-                android:gravity="center"
-                android:layout_marginEnd="12dp">
-                <ImageView
+            android:orientation="vertical"
+            android:paddingBottom="20dp">
+
+            <!-- Name and Save Button Row -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="15dp"
+                android:paddingHorizontal="15dp">
+                <TextView
+                    android:id="@+id/name"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:text="McDonald's, Brooklyn"
+                    android:fontFamily="@font/montserrat_med"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@id/save_btn"
+                    android:layout_centerVertical="true"/>
+                <ImageView
+                    android:id="@+id/save_btn"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_alignParentEnd="true"
+                    android:src="@drawable/save_w"
+                    app:tint="@color/white"
+                    android:layout_centerVertical="true"/>
+            </RelativeLayout>
+
+            <!-- Location -->
+            <TextView
+                android:id="@+id/location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:drawableStart="@drawable/map_pin_w_s"
+                android:fontFamily="@font/montserrat_med"
+                android:drawablePadding="4dp"
+                android:text="19 Greenwich Avenue, Time Squ...."
+                android:textColor="@color/white"
+                android:textSize="12sp"
+                android:layout_marginLeft="15dp"/>
+
+            <!-- Rating Row -->
+            <LinearLayout
+                android:id="@+id/rating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:layout_marginTop="10dp">
+                <TextView
+                    android:id="@+id/ratingScore"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="4.0"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_med"
+                    android:textStyle="bold" />
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginStart="4dp">
+                    <ImageView android:layout_width="14dp" android:layout_height="14dp" android:src="@drawable/star" app:tint="#45B884" />
+                    <ImageView android:layout_width="14dp" android:layout_height="14dp" android:layout_marginStart="2dp" android:src="@drawable/star" app:tint="#45B884" />
+                    <ImageView android:layout_width="14dp" android:layout_height="14dp" android:layout_marginStart="2dp" android:src="@drawable/star" app:tint="#45B884" />
+                    <ImageView android:layout_width="14dp" android:layout_height="14dp" android:layout_marginStart="2dp" android:src="@drawable/star" app:tint="#45B884" />
+                    <ImageView android:layout_width="14dp" android:layout_height="14dp" android:layout_marginStart="2dp" android:src="@drawable/star" app:tint="@color/white" />
+                </LinearLayout>
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●     "
+                    android:textColor="@color/white"
+                    android:textSize="6sp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp" />
+                <ImageView
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
                     android:src="@drawable/car"
                     app:tint="@color/white" />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="60dp"
-                android:layout_height="35dp"
-                android:background="@drawable/pill_back"
-                android:gravity="center"
-                android:layout_marginEnd="12dp"
-                android:backgroundTint="#C7C7C7">
-                <ImageView
+                <TextView
+                    android:id="@+id/deliveryTime"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:src="@drawable/cycle"/>
+                    android:text="45mins"
+                    android:textColor="@color/white"
+                    android:textSize="12sp"
+                    android:fontFamily="@font/montserrat_med"
+                    android:layout_marginStart="4dp" />
             </LinearLayout>
-            <LinearLayout
-                android:layout_width="60dp"
-                android:layout_height="35dp"
-                android:background="@drawable/pill_back"
-                android:gravity="center"
-                android:backgroundTint="#C7C7C7">
-                <ImageView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/walk" />
-            </LinearLayout>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="20dp"
-            android:layout_height="45dp"
-            android:layout_weight="1"
-            android:background="@drawable/pill_back"
-            android:gravity="center"
-            android:orientation="horizontal">
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Call"
-                android:textColor="@color/white"
-                android:textSize="16sp"
-                android:fontFamily="@font/montserrat_med"
-                android:textStyle="bold"
-                android:layout_marginEnd="6dp" />
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/phone"
-                app:tint="@color/white" />
-        </LinearLayout>
-    </LinearLayout>
-    <LinearLayout
-        android:id="@+id/info"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:background="@drawable/info_box"
-        android:padding="10dp"
-        android:gravity="center_vertical"
-        android:layout_below="@id/trans_btns"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="10dp">
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/info_icon" />
-        <TextView
-            android:id="@+id/infoText"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="We Are Giving You The Best Route Based On Your Location, Stay Safe And Stay Ready, Remember, You Can Always Check The Menu To See If What You Desire Is Available"
-            android:textColor="@color/white"
-            android:textSize="13sp"
-            android:fontFamily="@font/montserrat_med"
-            android:paddingLeft="10dp"
-            android:lineSpacingExtra="2dp"/>
-    </LinearLayout>
-    <ImageButton
-        android:id="@+id/routes_btn"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:layout_below="@id/info"
-        android:background="@drawable/button_box_o"
-        android:layout_marginLeft="15dp"
-        android:layout_marginRight="15dp"
-        android:layout_marginTop="20dp"/>
-    <TextView
-        android:id="@+id/routes_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View Routes"
-        android:textStyle="bold"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        android:layout_alignTop="@id/routes_btn"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="13dp"/>
-    <TextView
-        android:id="@+id/menu_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="View Menu"
-        android:textStyle="bold"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="#F36600"
-        android:textSize="16sp"
-        android:layout_below="@id/routes_btn"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"/>
 
+            <!-- Transport Buttons -->
+            <LinearLayout
+                android:id="@+id/trans_btns"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="15dp"
+                android:gravity="center_vertical"
+                android:weightSum="4">
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="35dp"
+                        android:background="@drawable/pill_back"
+                        android:gravity="center"
+                        android:layout_marginEnd="12dp">
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/car"
+                            app:tint="@color/white" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="35dp"
+                        android:background="@drawable/pill_back"
+                        android:gravity="center"
+                        android:layout_marginEnd="12dp"
+                        android:backgroundTint="#C7C7C7">
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/cycle"/>
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="60dp"
+                        android:layout_height="35dp"
+                        android:background="@drawable/pill_back"
+                        android:gravity="center"
+                        android:backgroundTint="#C7C7C7">
+                        <ImageView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:src="@drawable/walk" />
+                    </LinearLayout>
+                </LinearLayout>
+                <LinearLayout
+                    android:layout_width="20dp"
+                    android:layout_height="45dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/pill_back"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Call"
+                        android:textColor="@color/white"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/montserrat_med"
+                        android:textStyle="bold"
+                        android:layout_marginEnd="6dp" />
+                    <ImageView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:src="@drawable/phone"
+                        app:tint="@color/white" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- Info Box -->
+            <LinearLayout
+                android:id="@+id/info"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/info_box"
+                android:padding="10dp"
+                android:gravity="center_vertical"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp"
+                android:layout_marginTop="10dp">
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/info_icon" />
+                <TextView
+                    android:id="@+id/infoText"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="We Are Giving You The Best Route Based On Your Location, Stay Safe And Stay Ready, Remember, You Can Always Check The Menu To See If What You Desire Is Available"
+                    android:textColor="@color/white"
+                    android:textSize="10sp"
+                    android:fontFamily="@font/montserrat_med"
+                    android:paddingLeft="10dp"
+                    android:lineSpacingExtra="2dp"/>
+            </LinearLayout>
+
+            <!-- Routes Button -->
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="15dp"
+                android:layout_marginRight="15dp">
+                <ImageButton
+                    android:id="@+id/routes_btn"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/button_box_o"/>
+                <TextView
+                    android:id="@+id/routes_text"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="View Routes"
+                    android:textStyle="bold"
+                    android:fontFamily="@font/montserrat_med"
+                    android:textColor="@color/white"
+                    android:textSize="16sp"
+                    android:layout_centerInParent="true"/>
+            </RelativeLayout>
+
+            <!-- View Menu Text -->
+            <TextView
+                android:id="@+id/menu_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Menu"
+                android:textStyle="bold"
+                android:fontFamily="@font/montserrat_med"
+                android:textColor="#F36600"
+                android:textSize="16sp"
+                android:gravity="center"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="20dp"/>
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- 3. Bottom Navigation Bar (Fixed at Bottom) -->
     <LinearLayout
+        android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -294,7 +306,7 @@
                 android:layout_height="wrap_content"
                 android:text="Home"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:fontFamily="@font/montserrat_med"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
@@ -315,7 +327,7 @@
                 android:text="Saved"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
@@ -335,7 +347,7 @@
                 android:text="Add Review"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
@@ -355,7 +367,7 @@
                 android:text="Profile"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
     </LinearLayout>

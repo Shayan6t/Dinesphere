@@ -130,9 +130,18 @@ class homepage : AppCompatActivity() {
     }
 
     private fun onRestaurantClick(restaurant: Restaurant) {
-        // Handle restaurant item click
-        Toast.makeText(this, "Clicked: ${restaurant.businessName}", Toast.LENGTH_SHORT).show()
-        // TODO: Navigate to restaurant detail screen
+        // Navigate to RestaurantActivity and pass data
+        val intent = Intent(this, RestaurantActivity::class.java)
+        intent.putExtra("RESTAURANT_ID", restaurant.restaurantId)
+        intent.putExtra("NAME", restaurant.businessName)
+        intent.putExtra("ADDRESS", restaurant.address)
+        intent.putExtra("IMAGE_URL", restaurant.imageUrl)
+        intent.putExtra("RATING", restaurant.rating)
+        intent.putExtra("DISTANCE", restaurant.distanceKm)
+        intent.putExtra("IS_SAVED", restaurant.isSaved)
+        intent.putExtra("LAT", restaurant.latitude)
+        intent.putExtra("LNG", restaurant.longitude)
+        startActivity(intent)
     }
 
     private fun handleSaveClick(restaurant: Restaurant, position: Int, adapter: RestaurantAdapter) {

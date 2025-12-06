@@ -67,7 +67,7 @@
             android:name=".menu"
             android:exported="false" />
         <activity
-            android:name=".Restaurant"
+            android:name=".RestaurantActivity"
             android:exported="false" />
         <activity
             android:name=".homepage"
