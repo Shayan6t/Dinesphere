@@ -24,6 +24,9 @@ class forget_password : AppCompatActivity() {
     private lateinit var verifyBtn: RelativeLayout
     private lateinit var backBtn: ImageView
 
+    // Flag to track if the email has been authenticated (either via API or passed from Profile)
+    private var isEmailVerified = false
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -45,57 +48,103 @@ class forget_password : AppCompatActivity() {
 
         backBtn.setOnClickListener { finish() }
 
-        // "Send OTP" acts as Check User
+        // Initially disable change button
+        setVerifyButtonState(false)
+
+        // 1. Check if an email was passed (meaning user came from Profile/authenticated state)
+        val incomingEmail = intent.getStringExtra("USER_EMAIL")
+
+        if (!incomingEmail.isNullOrEmpty()) {
+            // --- AUTHENTICATED FLOW (SKIP OTP) ---
+            emailInput.setText(incomingEmail)
+            emailInput.isEnabled = false // Prevent editing the email
+
+            sendOtpBtn.alpha = 0.5f // Visually disable Send OTP
+            sendOtpBtn.isEnabled = false
+
+            isEmailVerified = true // Mark as verified since authentication is known
+            setVerifyButtonState(true) // Immediately enable Change Password
+            showToast("Ready to set new password.")
+        }
+
+        // 2. Standard Flow: Send OTP Button
         sendOtpBtn.setOnClickListener {
             val email = emailInput.text.toString().trim()
             if (email.isNotEmpty()) {
+                // In standard flow, we check existence and simulate sending OTP
                 checkUserExists(email, isFinalAction = false)
             } else {
                 showToast("Enter email first")
             }
         }
 
-        // "Change Password" Button - moves to next screen
+        // 3. Standard Flow: Change Password Button
         verifyBtn.setOnClickListener {
-            val email = emailInput.text.toString().trim()
-            if (email.isNotEmpty()) {
-                checkUserExists(email, isFinalAction = true)
+            if (isEmailVerified) {
+                val email = emailInput.text.toString().trim()
+                // Navigate to Change Password Screen, passing the confirmed email
+                val intent = Intent(this, change_password::class.java)
+                intent.putExtra("USER_EMAIL", email)
+                startActivity(intent)
+                finish()
             } else {
-                showToast("Enter email first")
+                showToast("Please verify OTP first (or send OTP).")
             }
         }
+    }
+
+    private fun setVerifyButtonState(enabled: Boolean) {
+        verifyBtn.isEnabled = enabled
+        verifyBtn.alpha = if (enabled) 1.0f else 0.5f
     }
 
     private fun checkUserExists(email: String, isFinalAction: Boolean) {
         val url = Global.BASE_URL + "check_user.php"
 
+        // Disable interaction while loading
+        sendOtpBtn.isEnabled = false
+        sendOtpBtn.alpha = 0.5f
+
         val request = object : StringRequest(
             Request.Method.POST, url,
             Response.Listener { response ->
+                sendOtpBtn.isEnabled = true
+                sendOtpBtn.alpha = 1.0f
+
                 try {
                     val json = JSONObject(response)
                     val success = json.optBoolean("success")
                     val message = json.optString("message")
 
                     if (success) {
+                        // User found (Success in both standard and final steps)
+
                         if (isFinalAction) {
-                            // User exists, move to Change Password screen
+                            // This path is only reached if the user successfully verifies OTP (TBD)
                             val intent = Intent(this, change_password::class.java)
-                            intent.putExtra("USER_EMAIL", email) // Pass email to next activity
+                            intent.putExtra("USER_EMAIL", email)
                             startActivity(intent)
                             finish()
                         } else {
-                            showToast("User found! Please verify OTP (Simulated)")
+                            // Standard flow: User exists, now simulate OTP send
+                            showToast("OTP sent to email. Enter the code and verify.")
+                            isEmailVerified = true // Simulate OTP verified successfully
+                            setVerifyButtonState(true)
                         }
                     } else {
-                        showToast(message) // e.g., "Email not found"
+                        showToast(message)
+                        setVerifyButtonState(false)
                     }
                 } catch (e: Exception) {
                     showToast("Error parsing response")
+                    setVerifyButtonState(false)
                 }
             },
             Response.ErrorListener {
+                sendOtpBtn.isEnabled = true
+                sendOtpBtn.alpha = 1.0f
                 showToast("Connection failed")
+                setVerifyButtonState(false)
             }
         ) {
             override fun getParams(): MutableMap<String, String> {

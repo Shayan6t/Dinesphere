@@ -93,7 +93,11 @@
             android:drawableStart="@drawable/pro_pin_w"
             android:gravity="center_vertical|start"
             android:padding="20dp"
-            android:drawablePadding="14dp" />
+            android:drawablePadding="14dp"
+            android:inputType="textPostalAddress|textNoSuggestions"
+            android:maxLines="1"
+            android:singleLine="true"
+            android:ellipsize="end"/>
         <TextView
             android:id="@+id/changePassword"
             android:layout_marginVertical="10dp"

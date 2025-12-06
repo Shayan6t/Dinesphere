@@ -2,7 +2,6 @@ package com.example.dinesphere
 
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
@@ -20,6 +19,9 @@ import org.json.JSONObject
 class profile : AppCompatActivity() {
 
     private var currentUserId: String? = null
+    private var currentUserEmail: String? = null
+
+    private lateinit var databaseHelper: DatabaseHelper // Initialize DatabaseHelper
 
     // Views
     private lateinit var userNameView: TextView
@@ -27,9 +29,9 @@ class profile : AppCompatActivity() {
     private lateinit var locationView: TextView
     private lateinit var profileImageView: ImageView
     private lateinit var editProfileBtn: TextView
-    private lateinit var backButton: ImageView
     private lateinit var changePasswordBtn: TextView
     private lateinit var logoutBtn: TextView
+    private lateinit var backButton: ImageView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +42,8 @@ class profile : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+
+        databaseHelper = DatabaseHelper(this) // Initialize helper
 
         // 1. Read User ID passed from homepage
         currentUserId = intent.getStringExtra("USER_ID")
@@ -58,13 +62,14 @@ class profile : AppCompatActivity() {
         if (!currentUserId.isNullOrEmpty()) {
             loadProfileDetails(currentUserId!!)
         } else {
-            userIdView.text = "Not logged in"
+            userNameView.text = "Guest User"
+            userIdView.text = "#0000"
             Toast.makeText(this, "User ID missing. Cannot load profile.", Toast.LENGTH_SHORT).show()
         }
 
         // 4. Handle Navigation
 
-        // Edit Profile Navigation (sends user ID for editing)
+        // Edit Profile Navigation
         editProfileBtn.setOnClickListener {
             if (!currentUserId.isNullOrEmpty()) {
                 val intent = Intent(this, edit_profile::class.java)
@@ -77,21 +82,32 @@ class profile : AppCompatActivity() {
 
         // Change Password Navigation
         changePasswordBtn.setOnClickListener {
-            val intent = Intent(this, change_password::class.java)
-            startActivity(intent)
+            if (!currentUserEmail.isNullOrEmpty()) {
+                val intent = Intent(this, forget_password::class.java)
+                intent.putExtra("USER_EMAIL", currentUserEmail)
+                startActivity(intent)
+            } else {
+                Toast.makeText(this, "Error: User email not loaded yet.", Toast.LENGTH_SHORT).show()
+            }
         }
 
-        // Logout Logic (Placeholder)
+        // >>> LOGOUT IMPLEMENTATION <<<
         logoutBtn.setOnClickListener {
-            // In a real app, clear session data and navigate to login
-            Toast.makeText(this, "Logging out...", Toast.LENGTH_SHORT).show()
+            databaseHelper.clearSession() // Clear the session (user_id) from local storage
+
+            Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show()
+
+            // Navigate back to Login and clear all activities in the stack
+            val intent = Intent(this, login::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
         }
+
     }
 
     // Fetches full profile details from the server using the USER_ID
     private fun loadProfileDetails(userId: String) {
-        // Uses the get_user_details.php API you created
         val url = "${Global.BASE_URL}get_user_details.php?user_id=$userId"
 
         val request = StringRequest(
@@ -106,8 +122,9 @@ class profile : AppCompatActivity() {
                         val lastName = user.optString("last_name", "")
                         val profileImageUrl = user.optString("profile_image_url", null)
                         val address = user.optString("address", "Location not set")
+                        currentUserEmail = user.optString("email", null)
 
-                        // 1. Set Name (First Name + Last Name)
+                        // 1. Set Name
                         val fullName = "$firstName $lastName".trim()
                         userNameView.text = if (fullName.isNotEmpty()) fullName else user.optString("email", "DineSphere User")
 
