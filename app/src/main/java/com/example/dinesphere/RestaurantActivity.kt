@@ -28,11 +28,9 @@ class RestaurantActivity : AppCompatActivity() {
     private var distanceKm = 0.0
     private var phoneNumber: String? = null
 
-    // Coordinates for Restaurant
     private var restaurantLat: Double = 0.0
     private var restaurantLng: Double = 0.0
 
-    // Coordinates for User's Current Location (Fetched on creation)
     private var userLat: Double? = null
     private var userLng: Double? = null
 
@@ -45,13 +43,19 @@ class RestaurantActivity : AppCompatActivity() {
     private lateinit var btnRoutes: ImageButton
     private lateinit var btnViewMenu: TextView
 
+    // Bottom Navigation
+    private lateinit var navHome: LinearLayout
+    private lateinit var navSaved: LinearLayout
+    private lateinit var navReview: LinearLayout
+    private lateinit var navProfile: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_restaurant)
 
         databaseHelper = DatabaseHelper(this)
 
-        // 1. Initialize Views
+        // Initialize Views
         val imgRestaurant = findViewById<ImageView>(R.id.restaurant_img)
         val btnBack = findViewById<ImageButton>(R.id.back)
         val txtName = findViewById<TextView>(R.id.name)
@@ -67,7 +71,13 @@ class RestaurantActivity : AppCompatActivity() {
         btnRoutes = findViewById(R.id.routes_btn)
         btnViewMenu = findViewById(R.id.menu_text)
 
-        // 2. Extract Data passed from Homepage
+        // Initialize bottom navigation
+        navHome = findViewById(R.id.home)
+        navSaved = findViewById(R.id.saved)
+        navReview = findViewById(R.id.review)
+        navProfile = findViewById(R.id.profile)
+
+        // Extract Data
         restaurantId = intent.getIntExtra("RESTAURANT_ID", -1)
         val name = intent.getStringExtra("NAME") ?: "Unknown Restaurant"
         val address = intent.getStringExtra("ADDRESS") ?: "Address"
@@ -77,14 +87,13 @@ class RestaurantActivity : AppCompatActivity() {
         isSaved = intent.getBooleanExtra("IS_SAVED", false)
         phoneNumber = intent.getStringExtra("PHONE")
 
-        // Extract Restaurant Location
         restaurantLat = intent.getDoubleExtra("LAT", 0.0)
         restaurantLng = intent.getDoubleExtra("LNG", 0.0)
 
-        // 3. Load User Location
+        // Load User Location
         loadUserLocation()
 
-        // 4. Populate Views & Set Initial State
+        // Populate Views
         txtName.text = name
         txtLocation.text = address
         txtRating.text = rating.toString()
@@ -96,13 +105,13 @@ class RestaurantActivity : AppCompatActivity() {
         updateSaveIcon(btnSave, isSaved)
         updateTimeAndSelection(btnCar, 30)
 
-        // 5. ROUTES BUTTON - Track review entry + open maps
+        // Routes Button
         btnRoutes.setOnClickListener {
-            trackRestaurantView() // Track that user viewed routes
+            trackRestaurantView()
             openGoogleMapsDirections()
         }
 
-        // 6. VIEW MENU BUTTON
+        // View Menu Button
         btnViewMenu.setOnClickListener {
             val intent = Intent(this, menu::class.java)
             intent.putExtra("RESTAURANT_ID", restaurantId)
@@ -130,12 +139,40 @@ class RestaurantActivity : AppCompatActivity() {
         btnSave.setOnClickListener {
             if (isSaved) unsaveRestaurant(btnSave) else saveRestaurant(btnSave)
         }
+
+        // Bottom Navigation - HOME
+        navHome.setOnClickListener {
+            val intent = Intent(this, homepage::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        // Bottom Navigation - SAVED
+        navSaved.setOnClickListener {
+            val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - REVIEW
+        navReview.setOnClickListener {
+            val intent = Intent(this, reviews::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - PROFILE
+        navProfile.setOnClickListener {
+            val intent = Intent(this, profile::class.java)
+            val userId = databaseHelper.getUserId()
+            if (userId != null) {
+                intent.putExtra("USER_ID", userId)
+            }
+            startActivity(intent)
+        }
     }
 
     private fun trackRestaurantView() {
         val userId = databaseHelper.getUserId() ?: return
 
-        // Check if user already has a review for this restaurant
         val url = "${Global.BASE_URL}review(get).php?user_id=$userId&restaurant_id=$restaurantId"
 
         val request = StringRequest(
@@ -145,17 +182,15 @@ class RestaurantActivity : AppCompatActivity() {
                     val json = JSONObject(response)
                     val success = json.optBoolean("success", false)
 
-                    // If no review exists, create initial entry
                     if (!success) {
                         createInitialReviewEntry()
                     }
-                    // If review exists, do nothing
                 } catch (e: Exception) {
                     e.printStackTrace()
                 }
             },
             { error ->
-                // Network error, ignore
+                // Ignore
             }
         )
 

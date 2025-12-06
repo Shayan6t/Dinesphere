@@ -24,6 +24,8 @@ class reviews : AppCompatActivity() {
     private lateinit var reviewAdapter: ReviewAdapter
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var emptyStateImage: ImageView
+
+    // Bottom Navigation
     private lateinit var navHome: LinearLayout
     private lateinit var navSaved: LinearLayout
     private lateinit var navProfile: LinearLayout
@@ -43,6 +45,8 @@ class reviews : AppCompatActivity() {
         // Initialize views
         reviewsRecyclerView = findViewById(R.id.reviewsRecyclerView)
         emptyStateImage = findViewById(R.id.emptyStateImage)
+
+        // Initialize bottom navigation
         navHome = findViewById(R.id.home)
         navSaved = findViewById(R.id.saved)
         navProfile = findViewById(R.id.profile)
@@ -50,20 +54,26 @@ class reviews : AppCompatActivity() {
         // Setup RecyclerView
         setupRecyclerView()
 
-        // Navigation click listeners
+        // Bottom Navigation - HOME
         navHome.setOnClickListener {
             val intent = Intent(this, homepage::class.java)
             startActivity(intent)
             finish()
         }
 
+        // Bottom Navigation - SAVED
         navSaved.setOnClickListener {
             val intent = Intent(this, saved::class.java)
             startActivity(intent)
         }
 
+        // Bottom Navigation - PROFILE
         navProfile.setOnClickListener {
             val intent = Intent(this, profile::class.java)
+            val userId = databaseHelper.getUserId()
+            if (userId != null) {
+                intent.putExtra("USER_ID", userId)
+            }
             startActivity(intent)
         }
 
@@ -104,7 +114,7 @@ class reviews : AppCompatActivity() {
                         for (i in 0 until reviewsArray.length()) {
                             val item = reviewsArray.getJSONObject(i)
 
-                            // FIXED: Format address to show only last 3 parts
+                            // Format address to show only last 3 parts
                             val fullAddress = item.optString("address", "")
                             val formattedAddress = if (fullAddress.isNotEmpty()) {
                                 val addressParts = fullAddress.split(",")

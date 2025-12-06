@@ -1,7 +1,9 @@
 package com.example.dinesphere
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,31 +20,75 @@ class menu : AppCompatActivity() {
     private lateinit var categoryAdapter: CategoryAdapter
     private lateinit var menuAdapter: MenuAdapter
     private lateinit var btnBack: ImageButton
+    private lateinit var databaseHelper: DatabaseHelper
 
     private var restaurantId = -1
+
+    // Bottom Navigation
+    private lateinit var navHome: LinearLayout
+    private lateinit var navSaved: LinearLayout
+    private lateinit var navReview: LinearLayout
+    private lateinit var navProfile: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_menu)
 
-        // 1. Get Restaurant ID from Intent
+        databaseHelper = DatabaseHelper(this)
+
+        // Get Restaurant ID from Intent
         restaurantId = intent.getIntExtra("RESTAURANT_ID", -1)
 
-        // 2. Initialize Views
+        // Initialize Views
         btnBack = findViewById(R.id.back)
         recyclerCategories = findViewById(R.id.recycler_categories)
         recyclerMenu = findViewById(R.id.recycler_menu)
 
+        // Initialize bottom navigation
+        navHome = findViewById(R.id.home)
+        navSaved = findViewById(R.id.saved)
+        navReview = findViewById(R.id.review)
+        navProfile = findViewById(R.id.profile)
+
         btnBack.setOnClickListener { finish() }
 
-        // 3. Setup RecyclerViews
+        // Setup RecyclerViews
         setupRecyclerViews()
 
-        // 4. Fetch Data
+        // Fetch Data
         if (restaurantId != -1) {
             loadCategories()
         } else {
             Toast.makeText(this, "Error: Restaurant not found", Toast.LENGTH_SHORT).show()
+        }
+
+        // Bottom Navigation - HOME
+        navHome.setOnClickListener {
+            val intent = Intent(this, homepage::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        // Bottom Navigation - SAVED
+        navSaved.setOnClickListener {
+            val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - REVIEW
+        navReview.setOnClickListener {
+            val intent = Intent(this, reviews::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - PROFILE
+        navProfile.setOnClickListener {
+            val intent = Intent(this, profile::class.java)
+            val userId = databaseHelper.getUserId()
+            if (userId != null) {
+                intent.putExtra("USER_ID", userId)
+            }
+            startActivity(intent)
         }
     }
 
@@ -50,7 +96,6 @@ class menu : AppCompatActivity() {
         // Categories (Horizontal)
         recyclerCategories.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
         categoryAdapter = CategoryAdapter(emptyList()) { selectedCategory ->
-            // When category is clicked, load menu items for it
             loadMenuItems(selectedCategory.categoryId)
         }
         recyclerCategories.adapter = categoryAdapter
@@ -62,14 +107,12 @@ class menu : AppCompatActivity() {
     }
 
     private fun loadCategories() {
-        // USE RESTAURANT_URL HERE
         val url = "${Global.RESTAURANT_URL}category(get).php?restaurant_id=$restaurantId"
-
-        android.util.Log.d("MenuDebug", "Fetching categories from: $url") // Add Log
+        android.util.Log.d("MenuDebug", "Fetching categories from: $url")
 
         val request = StringRequest(Request.Method.GET, url,
             { response ->
-                android.util.Log.d("MenuDebug", "Category Response: $response") // Add Log
+                android.util.Log.d("MenuDebug", "Category Response: $response")
                 try {
                     val json = JSONObject(response)
                     if (json.optString("status") == "success") {
@@ -109,17 +152,14 @@ class menu : AppCompatActivity() {
     }
 
     private fun loadMenuItems(categoryId: Int) {
-        // USE RESTAURANT_URL HERE
         val url = "${Global.RESTAURANT_URL}menu(get).php?category_id=$categoryId"
+        android.util.Log.d("MenuDebug", "Fetching menu from: $url")
 
-        android.util.Log.d("MenuDebug", "Fetching menu from: $url") // Add Log
-
-        // Clear list so user knows it's reloading
         menuAdapter.updateData(emptyList())
 
         val request = StringRequest(Request.Method.GET, url,
             { response ->
-                android.util.Log.d("MenuDebug", "Menu Response: $response") // Add Log
+                android.util.Log.d("MenuDebug", "Menu Response: $response")
                 try {
                     val json = JSONObject(response)
                     if (json.optString("status") == "success") {
@@ -138,7 +178,6 @@ class menu : AppCompatActivity() {
                         }
                         menuAdapter.updateData(list)
                     } else {
-                        // Some categories might be empty, that's okay
                         android.util.Log.d("MenuDebug", "No items or status error")
                     }
                 } catch (e: Exception) {

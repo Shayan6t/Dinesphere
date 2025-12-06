@@ -24,6 +24,9 @@ class saved : AppCompatActivity() {
     private lateinit var savedRecycler: RecyclerView
     private lateinit var emptyMessage: TextView
     private lateinit var navHome: LinearLayout
+    private lateinit var navSaved: LinearLayout
+    private lateinit var navProfile: LinearLayout
+    private lateinit var navReview: LinearLayout
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var savedAdapter: SavedRestaurantAdapter
 
@@ -40,7 +43,11 @@ class saved : AppCompatActivity() {
         searchBar = findViewById(R.id.searchbar)
         savedRecycler = findViewById(R.id.saved_recycler)
         emptyMessage = findViewById(R.id.empty_message)
+
+        // Initialize bottom navigation
         navHome = findViewById(R.id.home)
+        navReview = findViewById(R.id.review)
+        navProfile = findViewById(R.id.profile)
 
         // Setup RecyclerView
         setupRecyclerView()
@@ -57,9 +64,29 @@ class saved : AppCompatActivity() {
             }
         })
 
-        // Navigation - Home button
+        // Bottom Navigation - HOME
         navHome.setOnClickListener {
-            finish() // Go back to homepage
+            val intent = Intent(this, homepage::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        // Bottom Navigation - SAVED (already on saved page, do nothing or refresh)
+
+        // Bottom Navigation - REVIEW
+        navReview.setOnClickListener {
+            val intent = Intent(this, reviews::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - PROFILE
+        navProfile.setOnClickListener {
+            val intent = Intent(this, profile::class.java)
+            val userId = databaseHelper.getUserId()
+            if (userId != null) {
+                intent.putExtra("USER_ID", userId)
+            }
+            startActivity(intent)
         }
     }
 
@@ -68,8 +95,19 @@ class saved : AppCompatActivity() {
         savedAdapter = SavedRestaurantAdapter(
             filteredRestaurants,
             onRestaurantClick = { restaurant ->
-                Toast.makeText(this, "Opening: ${restaurant.businessName}", Toast.LENGTH_SHORT).show()
-                // TODO: Navigate to restaurant detail
+                // Navigate to restaurant detail
+                val intent = Intent(this, RestaurantActivity::class.java)
+                intent.putExtra("RESTAURANT_ID", restaurant.restaurantId)
+                intent.putExtra("NAME", restaurant.businessName)
+                intent.putExtra("ADDRESS", restaurant.address)
+                intent.putExtra("IMAGE_URL", restaurant.imageUrl)
+                intent.putExtra("RATING", restaurant.rating)
+                intent.putExtra("DISTANCE", restaurant.distanceKm)
+                intent.putExtra("IS_SAVED", restaurant.isSaved)
+                intent.putExtra("LAT", restaurant.latitude)
+                intent.putExtra("LNG", restaurant.longitude)
+                intent.putExtra("PHONE", restaurant.phone)
+                startActivity(intent)
             },
             onUnsaveClick = { restaurant, position ->
                 unsaveRestaurant(restaurant, position)
@@ -116,14 +154,13 @@ class saved : AppCompatActivity() {
                                 discount = item.optString("discount", null),
                                 distanceKm = item.optDouble("distance_km", 0.0),
                                 rating = item.optDouble("rating", 4.0).toFloat(),
-                                isSaved = true // All restaurants in this list are saved
+                                isSaved = true
                             )
                             allSavedRestaurants.add(restaurant)
                         }
 
                         Log.d("SavedDebug", "Loaded ${allSavedRestaurants.size} saved restaurants")
 
-                        // Show all saved restaurants
                         filteredRestaurants.clear()
                         filteredRestaurants.addAll(allSavedRestaurants)
                         savedAdapter.notifyDataSetChanged()
@@ -174,7 +211,6 @@ class saved : AppCompatActivity() {
                     val success = json.optBoolean("success", false)
 
                     if (success) {
-                        // Remove from lists
                         allSavedRestaurants.remove(restaurant)
                         filteredRestaurants.removeAt(position)
                         savedAdapter.notifyItemRemoved(position)

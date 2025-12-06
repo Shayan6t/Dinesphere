@@ -3,6 +3,7 @@ package com.example.dinesphere
 import android.content.Intent
 import android.os.Bundle
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -21,7 +22,7 @@ class profile : AppCompatActivity() {
     private var currentUserId: String? = null
     private var currentUserEmail: String? = null
 
-    private lateinit var databaseHelper: DatabaseHelper // Initialize DatabaseHelper
+    private lateinit var databaseHelper: DatabaseHelper
 
     // Views
     private lateinit var userNameView: TextView
@@ -33,6 +34,11 @@ class profile : AppCompatActivity() {
     private lateinit var logoutBtn: TextView
     private lateinit var backButton: ImageView
 
+    // Bottom Navigation
+    private lateinit var navHome: LinearLayout
+    private lateinit var navSaved: LinearLayout
+    private lateinit var navReview: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,12 +49,12 @@ class profile : AppCompatActivity() {
             insets
         }
 
-        databaseHelper = DatabaseHelper(this) // Initialize helper
+        databaseHelper = DatabaseHelper(this)
 
-        // 1. Read User ID passed from homepage
+        // Read User ID passed from homepage
         currentUserId = intent.getStringExtra("USER_ID")
 
-        // 2. Bind views
+        // Bind views
         userNameView = findViewById(R.id.name)
         userIdView = findViewById(R.id.userid)
         locationView = findViewById(R.id.location)
@@ -57,8 +63,12 @@ class profile : AppCompatActivity() {
         changePasswordBtn = findViewById(R.id.changePassword)
         logoutBtn = findViewById(R.id.logout)
 
+        // Initialize bottom navigation
+        navHome = findViewById(R.id.home)
+        navSaved = findViewById(R.id.saved)
+        navReview = findViewById(R.id.review)
 
-        // 3. Load data from server immediately using the USER_ID
+        // Load data from server
         if (!currentUserId.isNullOrEmpty()) {
             loadProfileDetails(currentUserId!!)
         } else {
@@ -66,8 +76,6 @@ class profile : AppCompatActivity() {
             userIdView.text = "#0000"
             Toast.makeText(this, "User ID missing. Cannot load profile.", Toast.LENGTH_SHORT).show()
         }
-
-        // 4. Handle Navigation
 
         // Edit Profile Navigation
         editProfileBtn.setOnClickListener {
@@ -91,19 +99,35 @@ class profile : AppCompatActivity() {
             }
         }
 
-        // >>> LOGOUT IMPLEMENTATION <<<
+        // Logout Implementation
         logoutBtn.setOnClickListener {
-            databaseHelper.clearSession() // Clear the session (user_id) from local storage
-
+            databaseHelper.clearSession()
             Toast.makeText(this, "Logged out successfully!", Toast.LENGTH_SHORT).show()
 
-            // Navigate back to Login and clear all activities in the stack
             val intent = Intent(this, login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
             finish()
         }
 
+        // Bottom Navigation - HOME
+        navHome.setOnClickListener {
+            val intent = Intent(this, homepage::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        // Bottom Navigation - SAVED
+        navSaved.setOnClickListener {
+            val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - REVIEW
+        navReview.setOnClickListener {
+            val intent = Intent(this, reviews::class.java)
+            startActivity(intent)
+        }
     }
 
     // Fetches full profile details from the server using the USER_ID
@@ -124,17 +148,17 @@ class profile : AppCompatActivity() {
                         val address = user.optString("address", "Location not set")
                         currentUserEmail = user.optString("email", null)
 
-                        // 1. Set Name
+                        // Set Name
                         val fullName = "$firstName $lastName".trim()
                         userNameView.text = if (fullName.isNotEmpty()) fullName else user.optString("email", "DineSphere User")
 
-                        // 2. Set User ID
+                        // Set User ID
                         userIdView.text = "#User $userId"
 
-                        // 3. Set Location
+                        // Set Location
                         locationView.text = address
 
-                        
+                        // Load profile image
                         if (!profileImageUrl.isNullOrEmpty()) {
                             Picasso.get()
                                 .load(profileImageUrl)

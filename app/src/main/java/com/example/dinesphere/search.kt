@@ -1,11 +1,13 @@
 package com.example.dinesphere
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
 import android.widget.EditText
 import android.widget.ImageButton
+import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -31,6 +33,12 @@ class search : AppCompatActivity() {
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
 
+    // Bottom Navigation
+    private lateinit var navHome: LinearLayout
+    private lateinit var navSaved: LinearLayout
+    private lateinit var navReview: LinearLayout
+    private lateinit var navProfile: LinearLayout
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_search)
@@ -41,6 +49,12 @@ class search : AppCompatActivity() {
         searchBar = findViewById(R.id.search_bar)
         backButton = findViewById(R.id.back)
         restaurantsRecycler = findViewById(R.id.restaurants_recycler)
+
+        // Initialize bottom navigation
+        navHome = findViewById(R.id.home)
+        navSaved = findViewById(R.id.saved)
+        navReview = findViewById(R.id.review)
+        navProfile = findViewById(R.id.profile)
 
         // Back button
         backButton.setOnClickListener {
@@ -61,10 +75,38 @@ class search : AppCompatActivity() {
                 filterRestaurants(s.toString())
             }
         })
+
+        // Bottom Navigation - HOME
+        navHome.setOnClickListener {
+            val intent = Intent(this, homepage::class.java)
+            startActivity(intent)
+            finish()
+        }
+
+        // Bottom Navigation - SAVED
+        navSaved.setOnClickListener {
+            val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - REVIEW
+        navReview.setOnClickListener {
+            val intent = Intent(this, reviews::class.java)
+            startActivity(intent)
+        }
+
+        // Bottom Navigation - PROFILE
+        navProfile.setOnClickListener {
+            val intent = Intent(this, profile::class.java)
+            val userId = databaseHelper.getUserId()
+            if (userId != null) {
+                intent.putExtra("USER_ID", userId)
+            }
+            startActivity(intent)
+        }
     }
 
     private fun setupRecyclerViews() {
-        // Restaurants RecyclerView (Horizontal)
         restaurantsRecycler.layoutManager = LinearLayoutManager(
             this,
             LinearLayoutManager.HORIZONTAL,
@@ -83,16 +125,24 @@ class search : AppCompatActivity() {
     }
 
     private fun onRestaurantClick(restaurant: Restaurant) {
-        Toast.makeText(this, "Opening: ${restaurant.businessName}", Toast.LENGTH_SHORT).show()
-        // TODO: Navigate to restaurant detail screen
+        val intent = Intent(this, RestaurantActivity::class.java)
+        intent.putExtra("RESTAURANT_ID", restaurant.restaurantId)
+        intent.putExtra("NAME", restaurant.businessName)
+        intent.putExtra("ADDRESS", restaurant.address)
+        intent.putExtra("IMAGE_URL", restaurant.imageUrl)
+        intent.putExtra("RATING", restaurant.rating)
+        intent.putExtra("DISTANCE", restaurant.distanceKm)
+        intent.putExtra("IS_SAVED", restaurant.isSaved)
+        intent.putExtra("LAT", restaurant.latitude)
+        intent.putExtra("LNG", restaurant.longitude)
+        intent.putExtra("PHONE", restaurant.phone)
+        startActivity(intent)
     }
 
     private fun handleSaveClick(restaurant: Restaurant, position: Int) {
         if (restaurant.isSaved) {
-            // Unsave the restaurant
             unsaveRestaurant(restaurant, position)
         } else {
-            // Save the restaurant
             saveRestaurant(restaurant, position)
         }
     }
@@ -261,7 +311,6 @@ class search : AppCompatActivity() {
 
                         Log.d("SearchDebug", "User location: $userLat, $userLng")
 
-                        // Load saved restaurant IDs first, then restaurants
                         loadSavedRestaurantIds()
                         loadRestaurants()
                     } else {
@@ -326,7 +375,6 @@ class search : AppCompatActivity() {
 
                         Log.d("SearchDebug", "Loaded ${allRestaurants.size} restaurants")
 
-                        // Initially show all restaurants
                         filteredRestaurants.clear()
                         filteredRestaurants.addAll(allRestaurants)
                         restaurantsAdapter.notifyDataSetChanged()
@@ -356,10 +404,8 @@ class search : AppCompatActivity() {
         filteredRestaurants.clear()
 
         if (query.isEmpty()) {
-            // Show all restaurants if search is empty
             filteredRestaurants.addAll(allRestaurants)
         } else {
-            // Filter by restaurant name (case-insensitive)
             val lowerQuery = query.lowercase()
             filteredRestaurants.addAll(
                 allRestaurants.filter { restaurant ->
