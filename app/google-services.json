@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "348340064088",
+    "project_id": "dinesphere-dc180",
+    "storage_bucket": "dinesphere-dc180.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348340064088:android:b339dc8348adb1b2c9df2d",
+        "android_client_info": {
+          "package_name": "com.example.Resturant"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpucSdbemcTnLxym6BCguIfYRmi7DM1AM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:348340064088:android:1e9e722c4cb1136bc9df2d",
+        "android_client_info": {
+          "package_name": "com.example.dinesphere"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCpucSdbemcTnLxym6BCguIfYRmi7DM1AM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
