@@ -41,7 +41,8 @@ class RestaurantActivity : AppCompatActivity() {
     private lateinit var btnCycle: LinearLayout
     private lateinit var btnWalk: LinearLayout
     private lateinit var btnCall: LinearLayout
-    private lateinit var btnRoutes: ImageButton // Routes button
+    private lateinit var btnRoutes: ImageButton
+    private lateinit var btnViewMenu: TextView // ADDED: View Menu button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,7 +63,8 @@ class RestaurantActivity : AppCompatActivity() {
         btnCycle = findViewById(R.id.btn_cycle)
         btnWalk = findViewById(R.id.btn_walk)
         btnCall = findViewById(R.id.btn_call)
-        btnRoutes = findViewById(R.id.routes_btn) // Initialize Routes button
+        btnRoutes = findViewById(R.id.routes_btn)
+        btnViewMenu = findViewById(R.id.menu_text) // INITIALIZED: View Menu button
 
         // 2. Extract Data passed from Homepage
         restaurantId = intent.getIntExtra("RESTAURANT_ID", -1)
@@ -78,7 +80,11 @@ class RestaurantActivity : AppCompatActivity() {
         restaurantLat = intent.getDoubleExtra("LAT", 0.0)
         restaurantLng = intent.getDoubleExtra("LNG", 0.0)
 
-        // 3. Load User Location (Non-UI blocking network call)
+        // NOTE: If user coordinates (USER_LAT, USER_LNG) were passed from homepage,
+        // they should be extracted here to avoid the extra network call in loadUserLocation().
+        // Example: userLat = intent.getDoubleExtra("USER_LAT", 0.0)
+
+        // 3. Load User Location (Required for Directions if not passed in Intent)
         loadUserLocation()
 
         // 4. Populate Views & Set Initial State
@@ -94,6 +100,18 @@ class RestaurantActivity : AppCompatActivity() {
             openGoogleMapsDirections()
         }
         // --- END ROUTES LOGIC ---
+
+        // --- 6. VIEW MENU BUTTON LOGIC ---
+        btnViewMenu.setOnClickListener {
+            // Launch the menu activity, passing necessary IDs and location data
+            val intent = Intent(this, menu::class.java)
+            intent.putExtra("RESTAURANT_ID", restaurantId)
+            // Pass user coordinates if available
+            userLat?.let { intent.putExtra("USER_LAT", it) }
+            userLng?.let { intent.putExtra("USER_LNG", it) }
+            startActivity(intent)
+        }
+        // --- END MENU LOGIC ---
 
 
         // --- Other Click Listeners ---
@@ -116,8 +134,8 @@ class RestaurantActivity : AppCompatActivity() {
     }
 
     /**
-     * Fetches the user's saved location (lat/lng) from the database to use as the starting point.
-     * This is required because the homepage only passed the address string, not the coordinates.
+     * Fetches the user's saved location (lat/lng) from the database to use as the starting point
+     * for directions.
      */
     private fun loadUserLocation() {
         val userId = databaseHelper.getUserId() ?: return
@@ -133,6 +151,7 @@ class RestaurantActivity : AppCompatActivity() {
                         userLat = data.getDouble("latitude")
                         userLng = data.getDouble("longitude")
                     } else {
+                        // User location not critical for viewing menu/details, but toast is useful.
                         Toast.makeText(this, "Current location data missing", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
@@ -140,7 +159,7 @@ class RestaurantActivity : AppCompatActivity() {
                 }
             },
             { error ->
-                // Do nothing if connection fails, just won't open map directions
+                // Do nothing if connection fails, user won't be able to open map directions precisely.
             }
         )
         Volley.newRequestQueue(this).add(request)
@@ -148,7 +167,6 @@ class RestaurantActivity : AppCompatActivity() {
 
     /**
      * Opens Google Maps showing directions from the user's saved location to the restaurant.
-     * Uses geo URI scheme (vnd.google.com/nav) which is guaranteed to open Google Maps.
      */
     private fun openGoogleMapsDirections() {
         if (userLat == null || userLng == null || restaurantLat == 0.0 || restaurantLng == 0.0) {
@@ -157,12 +175,10 @@ class RestaurantActivity : AppCompatActivity() {
         }
 
         // Construct the Google Maps directions URL (Using intent for better compatibility)
-        // daddr: destination address/coordinates
-        // saddr: starting address/coordinates
         val uri = "https://www.google.com/maps/dir/?api=1" +
                 "&origin=$userLat,$userLng" +
                 "&destination=$restaurantLat,$restaurantLng" +
-                "&travelmode=driving" // Default to driving, although Google Maps allows user to change it.
+                "&travelmode=driving"
 
         val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
         mapIntent.setPackage("com.google.android.apps.maps") // Force it to open Google Maps

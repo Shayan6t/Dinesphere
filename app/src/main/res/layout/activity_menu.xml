@@ -18,7 +18,7 @@
     <EditText
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
+        android:layout_height="45dp"
         android:fontFamily="@font/montserrat_med"
         android:layout_toRightOf="@id/back"
         android:background="@drawable/edittext_box"
@@ -68,105 +68,35 @@
             android:layout_weight="1"
             android:text="Menu Is Updated By The Restaurant Every 30mins"
             android:textColor="@color/white"
-            android:textSize="13sp"
+            android:textSize="10sp"
             android:fontFamily="@font/montserrat_med"
             android:paddingLeft="10dp"
             android:lineSpacingExtra="2dp"/>
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/list"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_categories"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_below="@id/info">
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="15dp">
-            <ImageView
-                android:id="@+id/foodimg1"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="@drawable/info_box"
-                android:scaleType="centerCrop"
-                android:clipToOutline="true"
-                android:src="@drawable/food1" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="210dp"
-                android:text="White Rice And Chicken"
-                android:textColor="@color/white"
-                android:fontFamily="@font/montserrat_med"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="235dp"
-                android:text="$  4.3"
-                android:fontFamily="@font/montserrat_med"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-        </FrameLayout>
-        <FrameLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginLeft="15dp"
-            android:layout_marginRight="15dp">
-            <ImageView
-                android:id="@+id/foodimg2"
-                android:layout_width="match_parent"
-                android:layout_height="200dp"
-                android:background="@drawable/info_box"
-                android:scaleType="centerCrop"
-                android:clipToOutline="true"
-                android:src="@drawable/food2" />
-            <LinearLayout
-                android:layout_width="400dp"
-                android:layout_height="200dp"
-                android:layout_gravity="center_horizontal"
-                android:background="#AA000000"
-                android:gravity="center"
-                android:orientation="vertical">
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Not Available"
-                    android:fontFamily="@font/montserrat_med"
-                    android:textColor="#FFFFFF"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="210dp"
-                android:text="Chicken And Chips"
-                android:textColor="@color/white"
-                android:fontFamily="@font/montserrat_med"
-                android:textSize="15sp"
-                android:textStyle="bold" />
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="235dp"
-                android:text="$  4.1"
-                android:fontFamily="@font/montserrat_med"
-                android:textColor="#FFFFFF"
-                android:textSize="14sp" />
-        </FrameLayout>
-    </LinearLayout>
+        android:layout_below="@id/info"
+        android:layout_marginTop="15dp"
+        android:paddingLeft="10dp"
+        android:orientation="horizontal"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_menu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@id/recycler_categories"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="60dp"
+        android:paddingBottom="20dp"/>
     <ImageButton
         android:id="@+id/maps_btn"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:layout_below="@id/list"
+        android:layout_below="@id/recycler_menu"
         android:background="@drawable/button_box_o"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
@@ -220,7 +150,7 @@
                 android:layout_height="wrap_content"
                 android:text="Home"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:fontFamily="@font/montserrat_med"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
@@ -241,7 +171,7 @@
                 android:text="Saved"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
@@ -261,7 +191,7 @@
                 android:text="Add Review"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
@@ -281,7 +211,7 @@
                 android:text="Profile"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
     </LinearLayout>
