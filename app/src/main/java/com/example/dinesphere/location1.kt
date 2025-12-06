@@ -37,6 +37,7 @@ class location1 : AppCompatActivity() {
     private lateinit var backBtn: ImageButton
     private lateinit var changeBtn: ImageButton
     private lateinit var listDownBtn: ImageButton
+    private lateinit var goToHomeBtn: ImageButton
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var databaseHelper: DatabaseHelper
 
@@ -63,9 +64,22 @@ class location1 : AppCompatActivity() {
         backBtn = findViewById(R.id.back)
         changeBtn = findViewById(R.id.change_btn)
         listDownBtn = findViewById(R.id.list_down)
+        goToHomeBtn = findViewById(R.id.go_to_home_btn)
+
+        // Initially disable "Go to Home" button
+        goToHomeBtn.isEnabled = false
+        goToHomeBtn.alpha = 0.4f
 
         // Back Button
         backBtn.setOnClickListener {
+            finish()
+        }
+
+        // Go to Home Button
+        goToHomeBtn.setOnClickListener {
+            val intent = Intent(this, homepage::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
             finish()
         }
 
@@ -221,6 +235,9 @@ class location1 : AppCompatActivity() {
                     val success = json.optBoolean("success")
                     if (success) {
                         Log.d("LocationDebug", "Location saved to DB")
+                        // Enable the "Go to Home" button
+                        goToHomeBtn.isEnabled = true
+                        goToHomeBtn.alpha = 1.0f
                     } else {
                         Log.e("LocationDebug", "Failed to save location")
                     }

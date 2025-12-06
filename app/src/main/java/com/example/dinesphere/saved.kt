@@ -40,7 +40,7 @@ class saved : AppCompatActivity() {
         searchBar = findViewById(R.id.searchbar)
         savedRecycler = findViewById(R.id.saved_recycler)
         emptyMessage = findViewById(R.id.empty_message)
-        navHome = findViewById(R.id.nav_home)
+        navHome = findViewById(R.id.home)
 
         // Setup RecyclerView
         setupRecyclerView()

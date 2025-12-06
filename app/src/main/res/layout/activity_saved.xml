@@ -17,7 +17,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="40dp"/>
+        android:layout_marginTop="20dp"/>
 
     <EditText
         android:id="@+id/searchbar"
@@ -63,7 +63,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_below="@id/recentTitle"
-        android:layout_above="@id/bottom_nav"
+        android:layout_marginBottom="70dp"
         android:layout_marginTop="15dp"
         android:clipToPadding="false"
         android:paddingBottom="10dp"/>
@@ -80,24 +80,20 @@
         android:visibility="gone"/>
 
     <LinearLayout
-        android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="@drawable/bottom_bar"
-        android:padding="15dp"
+        android:padding="10dp"
         android:weightSum="4">
-
         <LinearLayout
-            android:id="@+id/nav_home"
+            android:id="@+id/home"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical"
-            android:gravity="center"
-            android:clickable="true"
-            android:focusable="true">
+            android:gravity="center">
             <ImageView
                 android:layout_width="25dp"
                 android:layout_height="25dp"
@@ -108,12 +104,12 @@
                 android:layout_height="wrap_content"
                 android:text="Home"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:fontFamily="@font/montserrat_med"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
-
         <LinearLayout
+            android:id="@+id/saved"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -130,16 +126,11 @@
                 android:text="Saved"
                 android:textColor="#F36600"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
-            <View
-                android:layout_width="6dp"
-                android:layout_height="6dp"
-                android:background="@drawable/button_box_o"
-                android:layout_marginTop="3dp" />
         </LinearLayout>
-
         <LinearLayout
+            android:id="@+id/review"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -153,14 +144,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Review"
+                android:text="Review"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
                 android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
-
         <LinearLayout
+            android:id="@+id/profile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -177,7 +168,7 @@
                 android:text="Profile"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
     </LinearLayout>

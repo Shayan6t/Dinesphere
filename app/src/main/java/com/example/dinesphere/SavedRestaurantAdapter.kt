@@ -56,7 +56,15 @@ class SavedRestaurantAdapter(
 
         // Set restaurant name and address
         holder.restaurantName.text = restaurant.businessName
-        holder.restaurantAddress.text = restaurant.address
+
+        // Display only last 3 parts of address
+        val addressParts = restaurant.address.split(",")
+        val displayAddress = if (addressParts.size > 3) {
+            addressParts.takeLast(3).joinToString(",")
+        } else {
+            restaurant.address
+        }
+        holder.restaurantAddress.text = displayAddress
 
         // Set distance/time
         val timeInMinutes = (restaurant.distanceKm * 2).toInt() // Rough estimate

@@ -16,7 +16,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"/>
+        android:layout_marginTop="30dp"/>
     <ImageButton
         android:id="@+id/back"
         android:layout_width="wrap_content"
@@ -80,6 +80,7 @@
                     android:textSize="14sp" />
                 <EditText
                     android:id="@+id/firstText"
+                    android:maxLines="1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"
@@ -107,6 +108,7 @@
                     android:textSize="14sp" />
                 <EditText
                     android:id="@+id/lastText"
+                    android:maxLines="1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"
@@ -137,6 +139,7 @@
                 android:textSize="14sp" />
             <EditText
                 android:id="@+id/emailText"
+                android:maxLines="1"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColorHint="@color/white"
@@ -172,6 +175,7 @@
                     android:textSize="14sp" />
                 <EditText
                     android:id="@+id/genderText"
+                    android:maxLines="1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"
@@ -199,6 +203,7 @@
                     android:textSize="14sp" />
                 <EditText
                     android:id="@+id/phoneText"
+                    android:maxLines="1"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"

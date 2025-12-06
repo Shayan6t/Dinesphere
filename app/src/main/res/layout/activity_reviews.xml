@@ -16,7 +16,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"/>
+        android:layout_marginTop="30dp"/>
     <TextView
         android:id="@+id/dinedTitle"
         android:layout_width="wrap_content"
@@ -258,9 +258,10 @@
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="@drawable/bottom_bar"
-        android:padding="15dp"
+        android:padding="10dp"
         android:weightSum="4">
         <LinearLayout
+            android:id="@+id/home"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -281,6 +282,7 @@
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/saved"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -301,6 +303,7 @@
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/review"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -314,7 +317,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Review"
+                android:text="Review"
                 android:textColor="#F36600"
                 android:fontFamily="@font/montserrat_med"
                 android:textSize="14sp"
@@ -326,6 +329,7 @@
                 android:layout_marginTop="3dp" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/profile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"

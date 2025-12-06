@@ -344,7 +344,14 @@ class homepage : AppCompatActivity() {
                         userLng = data.getDouble("longitude")
                         val address = data.getString("address")
 
-                        currAddress.text = address
+                        // Display only last 3 parts of address
+                        val addressParts = address.split(",")
+                        val displayAddress = if (addressParts.size > 3) {
+                            addressParts.takeLast(3).joinToString(",")
+                        } else {
+                            address
+                        }
+                        currAddress.text = displayAddress
                         Log.d("HomepageDebug", "User location loaded: $userLat, $userLng")
 
                         // Load saved restaurant IDs first, then restaurants

@@ -23,18 +23,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentLeft="true"
+            android:layout_marginTop="5dp"
             android:layout_marginLeft="15dp"
             android:background="@drawable/map_pin_w"/>
 
         <TextView
             android:id="@+id/curr_address"
-            android:layout_width="wrap_content"
+            android:layout_width="250dp"
             android:layout_height="wrap_content"
             android:text="Time Square Way, Brooklyn Street"
             android:fontFamily="@font/montserrat_med"
             android:textColor="@color/white"
-            android:textSize="14sp"
-            android:layout_marginLeft="15dp"
+            android:textSize="12sp"
+            android:layout_marginLeft="10dp"
             android:layout_toRightOf="@id/address_icon"
             android:layout_alignTop="@id/address_icon"/>
 
@@ -227,7 +228,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Review"
+                android:text="Review"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
                 android:textSize="13sp"

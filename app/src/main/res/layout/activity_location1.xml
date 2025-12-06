@@ -17,7 +17,7 @@
         android:textColor="@color/white"
         android:textSize="20sp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"/>
+        android:layout_marginTop="30dp"/>
 
     <ImageButton
         android:id="@+id/back"
@@ -102,6 +102,30 @@
         android:gravity="center"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="20dp"/>
+
+    <!-- NEW: Go to Home Button -->
+    <ImageButton
+        android:id="@+id/go_to_home_btn"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:background="@drawable/button_box_o"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:layout_above="@id/change_btn"
+        android:layout_marginBottom="15dp"/>
+
+    <TextView
+        android:id="@+id/go_to_home_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Confirm"
+        android:textStyle="bold"
+        android:fontFamily="@font/montserrat_med"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:layout_alignTop="@id/go_to_home_btn"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="13dp"/>
 
     <ImageButton
         android:id="@+id/change_btn"

@@ -73,13 +73,12 @@
         android:layout_height="wrap_content"
         android:layout_below="@id/recommendations_heading"
         android:layout_marginTop="15dp"
-        android:layout_above="@id/bottom_nav"
+        android:layout_marginBottom="70dp"
         android:clipToPadding="false"
         android:paddingStart="15dp"
         android:paddingEnd="15dp"/>
 
     <LinearLayout
-        android:id="@+id/bottom_nav"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
@@ -87,8 +86,8 @@
         android:background="@drawable/bottom_bar"
         android:padding="10dp"
         android:weightSum="4">
-
         <LinearLayout
+            android:id="@+id/home"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -104,12 +103,12 @@
                 android:layout_height="wrap_content"
                 android:text="Home"
                 android:textColor="@color/white"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:fontFamily="@font/montserrat_med"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
-
         <LinearLayout
+            android:id="@+id/saved"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -126,11 +125,11 @@
                 android:text="Saved"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
-
         <LinearLayout
+            android:id="@+id/review"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -144,14 +143,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Review"
+                android:text="Review"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
-
         <LinearLayout
+            android:id="@+id/profile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -168,7 +167,7 @@
                 android:text="Profile"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
-                android:textSize="14sp"
+                android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
     </LinearLayout>

@@ -17,7 +17,7 @@
         android:textSize="20sp"
         android:textStyle="bold"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="70dp"/>
+        android:layout_marginTop="30dp"/>
     <ImageView
         android:id="@+id/profileImage"
         android:layout_width="90dp"
@@ -140,9 +140,10 @@
         android:orientation="horizontal"
         android:layout_alignParentBottom="true"
         android:background="@drawable/bottom_bar"
-        android:padding="15dp"
+        android:padding="10dp"
         android:weightSum="4">
         <LinearLayout
+            android:id="@+id/home"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -163,6 +164,7 @@
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/saved"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -183,6 +185,7 @@
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/review"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -196,13 +199,14 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add Review"
+                android:text="Review"
                 android:textColor="@color/white"
                 android:fontFamily="@font/montserrat_med"
                 android:textSize="13sp"
                 android:layout_marginTop="5dp" />
         </LinearLayout>
         <LinearLayout
+            android:id="@+id/profile"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
