@@ -49,6 +49,11 @@ class homepage : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
 
+        val userId = databaseHelper.getUserId()
+        if (userId != null) {
+            FCMTokenManager.initializeFCM(this, userId)
+        }
+
         // Initialize views
         currAddress = findViewById(R.id.curr_address)
         addressIcon = findViewById(R.id.address_icon)

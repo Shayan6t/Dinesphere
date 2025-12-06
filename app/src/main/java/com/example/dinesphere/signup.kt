@@ -124,7 +124,6 @@ class signup : AppCompatActivity() {
         val request = object : StringRequest(
             Request.Method.POST, url,
             Response.Listener { response ->
-                // --- DEBUGGING LOGS ---
                 Log.d("SignupDebug", "Raw Response: $response")
 
                 try {
@@ -142,6 +141,10 @@ class signup : AppCompatActivity() {
                     if (success) {
                         val userId = jsonResponse.optString("user_id")
                         databaseHelper.saveUserId(userId)
+
+                        // ✅ INITIALIZE FCM AFTER SUCCESSFUL SIGNUP
+                        FCMTokenManager.initializeFCM(this, userId)
+
                         showToast("Account Created Successfully!")
                         navigateToHome()
                     } else {

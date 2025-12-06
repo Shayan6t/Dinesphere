@@ -51,6 +51,9 @@ class login : AppCompatActivity() {
             return
         }
 
+        // ✅ REQUEST NOTIFICATION PERMISSION (Android 13+)
+        FCMTokenManager.requestNotificationPermission(this)
+
         // Initialize Views
         inputEmail = findViewById(R.id.input_email)
         inputPassword = findViewById(R.id.input_password)
@@ -139,6 +142,9 @@ class login : AppCompatActivity() {
                             // Save Session locally
                             val isSaved = databaseHelper.saveUserId(userId)
                             if (isSaved) {
+                                // ✅ INITIALIZE FCM AFTER SUCCESSFUL LOGIN
+                                FCMTokenManager.initializeFCM(this, userId)
+
                                 showToast("Login Successful!")
                                 navigateToHome()
                             } else {
