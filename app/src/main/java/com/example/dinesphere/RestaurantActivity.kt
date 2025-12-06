@@ -5,6 +5,7 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -42,7 +43,7 @@ class RestaurantActivity : AppCompatActivity() {
     private lateinit var btnWalk: LinearLayout
     private lateinit var btnCall: LinearLayout
     private lateinit var btnRoutes: ImageButton
-    private lateinit var btnViewMenu: TextView // ADDED: View Menu button
+    private lateinit var btnViewMenu: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -64,7 +65,7 @@ class RestaurantActivity : AppCompatActivity() {
         btnWalk = findViewById(R.id.btn_walk)
         btnCall = findViewById(R.id.btn_call)
         btnRoutes = findViewById(R.id.routes_btn)
-        btnViewMenu = findViewById(R.id.menu_text) // INITIALIZED: View Menu button
+        btnViewMenu = findViewById(R.id.menu_text)
 
         // 2. Extract Data passed from Homepage
         restaurantId = intent.getIntExtra("RESTAURANT_ID", -1)
@@ -80,41 +81,37 @@ class RestaurantActivity : AppCompatActivity() {
         restaurantLat = intent.getDoubleExtra("LAT", 0.0)
         restaurantLng = intent.getDoubleExtra("LNG", 0.0)
 
-        // NOTE: If user coordinates (USER_LAT, USER_LNG) were passed from homepage,
-        // they should be extracted here to avoid the extra network call in loadUserLocation().
-        // Example: userLat = intent.getDoubleExtra("USER_LAT", 0.0)
-
-        // 3. Load User Location (Required for Directions if not passed in Intent)
+        // 3. Load User Location
         loadUserLocation()
 
         // 4. Populate Views & Set Initial State
         txtName.text = name
         txtLocation.text = address
         txtRating.text = rating.toString()
-        if (!imageUrl.isNullOrEmpty()) { Picasso.get().load(imageUrl).fit().centerCrop().into(imgRestaurant) } else { imgRestaurant.setImageResource(R.drawable.img1) }
+        if (!imageUrl.isNullOrEmpty()) {
+            Picasso.get().load(imageUrl).fit().centerCrop().into(imgRestaurant)
+        } else {
+            imgRestaurant.setImageResource(R.drawable.img1)
+        }
         updateSaveIcon(btnSave, isSaved)
-        updateTimeAndSelection(btnCar, 30) // Default Mode (Car)
+        updateTimeAndSelection(btnCar, 30)
 
-        // --- 5. ROUTES BUTTON LOGIC ---
+        // 5. ROUTES BUTTON - Track review entry + open maps
         btnRoutes.setOnClickListener {
+            trackRestaurantView() // Track that user viewed routes
             openGoogleMapsDirections()
         }
-        // --- END ROUTES LOGIC ---
 
-        // --- 6. VIEW MENU BUTTON LOGIC ---
+        // 6. VIEW MENU BUTTON
         btnViewMenu.setOnClickListener {
-            // Launch the menu activity, passing necessary IDs and location data
             val intent = Intent(this, menu::class.java)
             intent.putExtra("RESTAURANT_ID", restaurantId)
-            // Pass user coordinates if available
             userLat?.let { intent.putExtra("USER_LAT", it) }
             userLng?.let { intent.putExtra("USER_LNG", it) }
             startActivity(intent)
         }
-        // --- END MENU LOGIC ---
 
-
-        // --- Other Click Listeners ---
+        // Other Click Listeners
         btnCar.setOnClickListener { updateTimeAndSelection(btnCar, 30) }
         btnCycle.setOnClickListener { updateTimeAndSelection(btnCycle, 15) }
         btnWalk.setOnClickListener { updateTimeAndSelection(btnWalk, 5) }
@@ -130,13 +127,74 @@ class RestaurantActivity : AppCompatActivity() {
         }
 
         btnBack.setOnClickListener { finish() }
-        btnSave.setOnClickListener { if (isSaved) unsaveRestaurant(btnSave) else saveRestaurant(btnSave) }
+        btnSave.setOnClickListener {
+            if (isSaved) unsaveRestaurant(btnSave) else saveRestaurant(btnSave)
+        }
     }
 
-    /**
-     * Fetches the user's saved location (lat/lng) from the database to use as the starting point
-     * for directions.
-     */
+    private fun trackRestaurantView() {
+        val userId = databaseHelper.getUserId() ?: return
+
+        // Check if user already has a review for this restaurant
+        val url = "${Global.BASE_URL}review(get).php?user_id=$userId&restaurant_id=$restaurantId"
+
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    // If no review exists, create initial entry
+                    if (!success) {
+                        createInitialReviewEntry()
+                    }
+                    // If review exists, do nothing
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            },
+            { error ->
+                // Network error, ignore
+            }
+        )
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun createInitialReviewEntry() {
+        val userId = databaseHelper.getUserId() ?: return
+        val url = "${Global.BASE_URL}review(post).php"
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            { response ->
+                try {
+                    val json = JSONObject(response)
+                    if (json.optBoolean("success")) {
+                        Log.d("RestaurantActivity", "Initial review entry created")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            },
+            { error ->
+                Log.e("RestaurantActivity", "Failed to create review entry: ${error.message}")
+            }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                return hashMapOf(
+                    "user_id" to userId,
+                    "restaurant_id" to restaurantId.toString(),
+                    "rating" to "0",
+                    "comment" to ""
+                )
+            }
+        }
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
     private fun loadUserLocation() {
         val userId = databaseHelper.getUserId() ?: return
         val url = "${Global.BASE_URL}get_user_location.php?user_id=$userId"
@@ -151,7 +209,6 @@ class RestaurantActivity : AppCompatActivity() {
                         userLat = data.getDouble("latitude")
                         userLng = data.getDouble("longitude")
                     } else {
-                        // User location not critical for viewing menu/details, but toast is useful.
                         Toast.makeText(this, "Current location data missing", Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
@@ -159,41 +216,33 @@ class RestaurantActivity : AppCompatActivity() {
                 }
             },
             { error ->
-                // Do nothing if connection fails, user won't be able to open map directions precisely.
+                // Ignore
             }
         )
         Volley.newRequestQueue(this).add(request)
     }
 
-    /**
-     * Opens Google Maps showing directions from the user's saved location to the restaurant.
-     */
     private fun openGoogleMapsDirections() {
         if (userLat == null || userLng == null || restaurantLat == 0.0 || restaurantLng == 0.0) {
             Toast.makeText(this, "Waiting for location data. Try again in a moment.", Toast.LENGTH_LONG).show()
             return
         }
 
-        // Construct the Google Maps directions URL (Using intent for better compatibility)
         val uri = "https://www.google.com/maps/dir/?api=1" +
                 "&origin=$userLat,$userLng" +
                 "&destination=$restaurantLat,$restaurantLng" +
                 "&travelmode=driving"
 
         val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
-        mapIntent.setPackage("com.google.android.apps.maps") // Force it to open Google Maps
+        mapIntent.setPackage("com.google.android.apps.maps")
 
         try {
             startActivity(mapIntent)
         } catch (e: Exception) {
-            // Fallback if Google Maps app is not installed (opens in browser)
             mapIntent.setPackage(null)
             startActivity(mapIntent)
         }
     }
-
-
-    // --- UTILITY AND API FUNCTIONS (Unchanged) ---
 
     private fun updateTimeAndSelection(selectedBtn: LinearLayout, speedKmh: Int) {
         val grayColor = ColorStateList.valueOf(Color.parseColor("#C7C7C7"))

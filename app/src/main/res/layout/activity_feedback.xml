@@ -77,7 +77,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:src="@drawable/b_star"
-                app:tint="#F3D0B6"
                 android:layout_marginHorizontal="10dp" />
         </LinearLayout>
         <EditText
@@ -95,9 +94,10 @@
             android:textColor="@color/white"
             android:gravity="start" />
         <TextView
+            android:id="@+id/characterCount"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="50 Chatacters"
+            android:text="0 Characters"
             android:fontFamily="@font/montserrat_med"
             android:textSize="10sp"
             android:textColor="@color/white"
