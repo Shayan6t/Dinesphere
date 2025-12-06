@@ -40,7 +40,7 @@ object FCMTokenManager {
      * Send token to backend API
      */
     fun updateTokenToBackend(context: Context, userId: String, token: String) {
-        val url = "${Global.BASE_URL}update_device_token.php"
+        val url = "${Global.BASE_URL}token(update).php"
 
         Log.d(TAG, "Updating token to backend for user: $userId")
 
