@@ -84,6 +84,7 @@
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     android:fontFamily="@font/montserrat_med"
                     android:backgroundTint="#F36600"
                     android:layout_marginEnd="10dp" />
@@ -110,6 +111,7 @@
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     android:fontFamily="@font/montserrat_med"
                     android:backgroundTint="#F36600"
                     android:layout_marginEnd="10dp" />
@@ -139,6 +141,7 @@
                 android:layout_height="wrap_content"
                 android:textColorHint="@color/white"
                 android:textColor="@color/white"
+                android:textSize="14sp"
                 android:fontFamily="@font/montserrat_med"
                 android:backgroundTint="#F36600"
                 android:inputType="textEmailAddress" />
@@ -173,6 +176,7 @@
                     android:layout_height="wrap_content"
                     android:textColorHint="@color/white"
                     android:textColor="@color/white"
+                    android:textSize="14sp"
                     android:fontFamily="@font/montserrat_med"
                     android:backgroundTint="#F36600"
                     android:layout_marginEnd="10dp" />
@@ -200,6 +204,7 @@
                     android:textColorHint="@color/white"
                     android:textColor="@color/white"
                     android:backgroundTint="#F36600"
+                    android:textSize="14sp"
                     android:fontFamily="@font/montserrat_med"
                     android:layout_marginEnd="10dp"
                     android:inputType="phone" />

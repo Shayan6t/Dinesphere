@@ -31,6 +31,7 @@ class homepage : AppCompatActivity() {
     private lateinit var allRestaurantAdapter: RestaurantAdapter
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var navSaved: LinearLayout
+    private lateinit var navProfile: LinearLayout
 
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
@@ -57,6 +58,8 @@ class homepage : AppCompatActivity() {
 
         // Initialize bottom navigation - Saved button
         navSaved = findViewById(R.id.save)
+        // Initialize bottom navigation - Profile button
+        navProfile = findViewById(R.id.profile)
 
         // Setup RecyclerViews with horizontal layout
         setupRecyclerViews()
@@ -83,6 +86,20 @@ class homepage : AppCompatActivity() {
         // Saved navigation click
         navSaved.setOnClickListener {
             val intent = Intent(this, saved::class.java)
+            startActivity(intent)
+        }
+
+        // Profile navigation click - pass necessary data (user id, address, lat/lng)
+        navProfile.setOnClickListener {
+            val intent = Intent(this, profile::class.java)
+            val userId = databaseHelper.getUserId()
+            if (userId != null) {
+                intent.putExtra("USER_ID", userId)
+            }
+            // pass currently displayed address and last-known coordinates
+            intent.putExtra("ADDRESS", currAddress.text.toString())
+            intent.putExtra("LAT", userLat)
+            intent.putExtra("LNG", userLng)
             startActivity(intent)
         }
     }
