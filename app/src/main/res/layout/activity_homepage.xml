@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentTop="true"
-        android:paddingTop="50dp"
+        android:paddingTop="30dp"
         android:paddingBottom="10dp"
         android:background="@color/black">
 
@@ -90,7 +90,7 @@
                 android:textColor="@color/white"
                 android:textSize="13sp"
                 android:layout_marginLeft="70dp"
-                android:layout_marginTop="-25dp"/>
+                android:layout_marginTop="-23dp"/>
 
             <TextView
                 android:id="@+id/navigate_text"
@@ -115,7 +115,7 @@
                 android:text="Restaurants within 5km"
                 android:fontFamily="@font/montserrat_med"
                 android:textColor="@color/white"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="20dp"/>
 
@@ -137,7 +137,7 @@
                 android:text="All Restaurants"
                 android:fontFamily="@font/montserrat_med"
                 android:textColor="@color/white"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 android:layout_marginLeft="15dp"
                 android:layout_marginTop="20dp"/>
 
