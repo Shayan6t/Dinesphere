@@ -5,7 +5,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:background="@color/black"
-    tools:context=".feedback">
+    tools:context=".feedback"
+    android:id="@+id/main">
     <TextView
         android:id="@+id/feedbackTitle"
         android:layout_width="wrap_content"

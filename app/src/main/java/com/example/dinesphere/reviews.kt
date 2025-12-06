@@ -3,6 +3,8 @@ package com.example.dinesphere
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.view.View
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -21,6 +23,7 @@ class reviews : AppCompatActivity() {
     private lateinit var reviewsRecyclerView: RecyclerView
     private lateinit var reviewAdapter: ReviewAdapter
     private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var emptyStateImage: ImageView
     private lateinit var navHome: LinearLayout
     private lateinit var navSaved: LinearLayout
     private lateinit var navProfile: LinearLayout
@@ -37,13 +40,15 @@ class reviews : AppCompatActivity() {
 
         databaseHelper = DatabaseHelper(this)
 
-        // Initialize RecyclerView (hidden in your current XML, need to add it)
-        // For now, we'll work with the static layout you have
-
-        // Initialize bottom navigation
+        // Initialize views
+        reviewsRecyclerView = findViewById(R.id.reviewsRecyclerView)
+        emptyStateImage = findViewById(R.id.emptyStateImage)
         navHome = findViewById(R.id.home)
         navSaved = findViewById(R.id.saved)
         navProfile = findViewById(R.id.profile)
+
+        // Setup RecyclerView
+        setupRecyclerView()
 
         // Navigation click listeners
         navHome.setOnClickListener {
@@ -66,11 +71,18 @@ class reviews : AppCompatActivity() {
         loadReviewedRestaurants()
     }
 
+    private fun setupRecyclerView() {
+        reviewsRecyclerView.layoutManager = LinearLayoutManager(this)
+        reviewAdapter = ReviewAdapter(emptyList())
+        reviewsRecyclerView.adapter = reviewAdapter
+    }
+
     private fun loadReviewedRestaurants() {
         val userId = databaseHelper.getUserId()
 
         if (userId == null) {
             Toast.makeText(this, "Please log in to view reviews", Toast.LENGTH_SHORT).show()
+            showEmptyState(true)
             return
         }
 
@@ -106,85 +118,48 @@ class reviews : AppCompatActivity() {
                         }
 
                         Log.d("ReviewsDebug", "Loaded ${reviews.size} reviews")
+                        reviewAdapter.updateReviews(reviews)
 
-                        // Show only first 5 in the static layout
-                        populateStaticReviews(reviews)
+                        // Show/hide empty state
+                        showEmptyState(reviews.isEmpty())
 
                         if (reviews.isEmpty()) {
                             Toast.makeText(
                                 this,
-                                "No reviewed restaurants yet",
-                                Toast.LENGTH_SHORT
+                                "No reviewed restaurants yet. Visit a restaurant to add a review!",
+                                Toast.LENGTH_LONG
                             ).show()
                         }
                     } else {
                         val message = json.optString("message", "No reviews found")
+                        Log.e("ReviewsDebug", "Error: $message")
+                        showEmptyState(true)
                         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
                     }
                 } catch (e: Exception) {
                     e.printStackTrace()
                     Log.e("ReviewsDebug", "Error: ${e.message}")
                     Toast.makeText(this, "Error loading reviews", Toast.LENGTH_SHORT).show()
+                    showEmptyState(true)
                 }
             },
             { error ->
                 Log.e("ReviewsDebug", "Network error: ${error.message}")
                 Toast.makeText(this, "Failed to load reviews", Toast.LENGTH_SHORT).show()
+                showEmptyState(true)
             }
         )
 
         Volley.newRequestQueue(this).add(request)
     }
 
-    private fun populateStaticReviews(reviews: List<ReviewModel>) {
-        val restaurant1 = findViewById<LinearLayout>(R.id.restaurant1)
-        val restaurant2 = findViewById<LinearLayout>(R.id.restaurant2)
-        val restaurant3 = findViewById<LinearLayout>(R.id.restaurant3)
-        val restaurant4 = findViewById<LinearLayout>(R.id.restaurant4)
-        val restaurant5 = findViewById<LinearLayout>(R.id.restaurant5)
-
-        val restaurants = listOf(restaurant1, restaurant2, restaurant3, restaurant4, restaurant5)
-
-        // Hide all first
-        restaurants.forEach { it.visibility = LinearLayout.GONE }
-
-        // Show and populate available reviews
-        reviews.take(5).forEachIndexed { index, review ->
-            restaurants[index].apply {
-                visibility = LinearLayout.VISIBLE
-
-                // Set restaurant name and address
-                val nameView = when(index) {
-                    0 -> findViewById<android.widget.TextView>(R.id.restaurantName1)
-                    1 -> findViewById<android.widget.TextView>(R.id.restaurantName2)
-                    2 -> findViewById<android.widget.TextView>(R.id.restaurantName3)
-                    3 -> findViewById<android.widget.TextView>(R.id.restaurantName4)
-                    else -> findViewById<android.widget.TextView>(R.id.restaurantName5)
-                }
-
-                val locationView = when(index) {
-                    0 -> findViewById<android.widget.TextView>(R.id.location1)
-                    1 -> findViewById<android.widget.TextView>(R.id.location2)
-                    2 -> findViewById<android.widget.TextView>(R.id.location3)
-                    3 -> findViewById<android.widget.TextView>(R.id.location4)
-                    else -> findViewById<android.widget.TextView>(R.id.location5)
-                }
-
-                nameView.text = review.businessName
-                locationView.text = review.address ?: "Address not available"
-
-                // Click to open feedback page
-                setOnClickListener {
-                    val intent = Intent(this@reviews, feedback::class.java)
-                    intent.putExtra("RESTAURANT_ID", review.restaurantId)
-                    intent.putExtra("RESTAURANT_NAME", review.businessName)
-                    intent.putExtra("RESTAURANT_ADDRESS", review.address)
-                    intent.putExtra("EXISTING_RATING", review.rating)
-                    intent.putExtra("EXISTING_COMMENT", review.comment)
-                    intent.putExtra("REVIEW_ID", review.reviewId)
-                    startActivity(intent)
-                }
-            }
+    private fun showEmptyState(show: Boolean) {
+        if (show) {
+            emptyStateImage.visibility = View.VISIBLE
+            reviewsRecyclerView.visibility = View.GONE
+        } else {
+            emptyStateImage.visibility = View.GONE
+            reviewsRecyclerView.visibility = View.VISIBLE
         }
     }
 }

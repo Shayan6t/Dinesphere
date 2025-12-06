@@ -1,5 +1,6 @@
 package com.example.dinesphere
 
+import android.annotation.SuppressLint
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -32,11 +33,14 @@ class homepage : AppCompatActivity() {
     private lateinit var databaseHelper: DatabaseHelper
     private lateinit var navSaved: LinearLayout
     private lateinit var navProfile: LinearLayout
+    private lateinit var navReview: LinearLayout
+
 
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
     private val savedRestaurantIds = mutableSetOf<Int>()
 
+    @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -54,7 +58,7 @@ class homepage : AppCompatActivity() {
             FCMTokenManager.initializeFCM(this, userId)
         }
 
-        val notificationButton: ImageButton = findViewById(R.id.notification_icon) // adjust ID as needed
+        val notificationButton: ImageButton = findViewById(R.id.notification_icon)
 
 
         // Initialize views
@@ -64,9 +68,9 @@ class homepage : AppCompatActivity() {
         restaurantRecyclerView = findViewById(R.id.restaurantRecyclerView)
         allRestaurantRecyclerView = findViewById(R.id.allRestaurantRecyclerView)
 
-        // Initialize bottom navigation - Saved button
+        // Initialize bottom navigation
         navSaved = findViewById(R.id.save)
-        // Initialize bottom navigation - Profile button
+        navReview = findViewById(R.id.review)  // FIXED: Added initialization
         navProfile = findViewById(R.id.profile)
 
         // Setup RecyclerViews with horizontal layout
@@ -97,6 +101,13 @@ class homepage : AppCompatActivity() {
             startActivity(intent)
         }
 
+        // Review navigation click
+        navReview.setOnClickListener {
+            val intent = Intent(this, reviews::class.java)
+            startActivity(intent)
+        }
+
+        // Notification button click
         notificationButton.setOnClickListener {
             val intent = Intent(this, notifications::class.java)
             startActivity(intent)
@@ -171,7 +182,7 @@ class homepage : AppCompatActivity() {
         intent.putExtra("IS_SAVED", restaurant.isSaved)
         intent.putExtra("LAT", restaurant.latitude)
         intent.putExtra("LNG", restaurant.longitude)
-        intent.putExtra("PHONE", restaurant.phone) // ADDED: Passing phone number
+        intent.putExtra("PHONE", restaurant.phone)
         startActivity(intent)
     }
 
@@ -434,7 +445,7 @@ class homepage : AppCompatActivity() {
                                 restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
-                                phone = item.optString("phone", null), // UPDATED: Extract phone
+                                phone = item.optString("phone", null),
                                 latitude = item.getDouble("latitude"),
                                 longitude = item.getDouble("longitude"),
                                 imageUrl = item.optString("image_url", null),
@@ -503,7 +514,7 @@ class homepage : AppCompatActivity() {
                                 restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
-                                phone = item.optString("phone", null), // UPDATED: Extract phone
+                                phone = item.optString("phone", null),
                                 latitude = item.getDouble("latitude"),
                                 longitude = item.getDouble("longitude"),
                                 imageUrl = item.optString("image_url", null),

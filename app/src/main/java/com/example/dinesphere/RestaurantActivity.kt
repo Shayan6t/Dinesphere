@@ -186,7 +186,7 @@ class RestaurantActivity : AppCompatActivity() {
                 return hashMapOf(
                     "user_id" to userId,
                     "restaurant_id" to restaurantId.toString(),
-                    "rating" to "0",
+                    "rating" to "1",
                     "comment" to ""
                 )
             }

@@ -22,7 +22,7 @@ class ReviewAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ReviewViewHolder {
         // Reuse the restaurant item layout from your static XML
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_review_restaurant, parent, false)
+            .inflate(R.layout.item_review, parent, false)
         return ReviewViewHolder(view)
     }
 
