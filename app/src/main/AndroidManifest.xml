@@ -78,6 +78,20 @@
         <activity
             android:name=".location1"
             android:exported="true"/>
+
+        <service
+            android:name=".MyFirebaseMessagingService"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
+        <!-- Default notification channel -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_channel_id"
+            android:value="restaurant_notifications" />
+
     </application>
 
 </manifest>
