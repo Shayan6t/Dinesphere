@@ -55,7 +55,7 @@ class feedback : AppCompatActivity() {
         feedbackBox = findViewById(R.id.feedback_box)
         submitButton = findViewById(R.id.feedback_btn_back)
         questionText = findViewById(R.id.question)
-        characterCount = findViewById(R.id.characterCount) // Add this ID to your XML
+        characterCount = findViewById(R.id.characterCount)
 
         star1 = findViewById(R.id.star1)
         star2 = findViewById(R.id.star2)
@@ -66,22 +66,10 @@ class feedback : AppCompatActivity() {
         // Get restaurant data from intent
         restaurantId = intent.getIntExtra("RESTAURANT_ID", -1)
         restaurantName = intent.getStringExtra("RESTAURANT_NAME") ?: ""
-        val existingRating = intent.getIntExtra("EXISTING_RATING", 0)
-        val existingComment = intent.getStringExtra("EXISTING_COMMENT") ?: ""
         reviewId = intent.getIntExtra("REVIEW_ID", -1)
 
         // Set question text with restaurant name
         questionText.text = "What is your opinion for $restaurantName?"
-
-        // Load existing review if available
-        if (existingRating > 0) {
-            selectedRating = existingRating
-            updateStarRating(existingRating)
-        }
-
-        if (existingComment.isNotEmpty()) {
-            feedbackBox.setText(existingComment)
-        }
 
         // Update character count
         updateCharacterCount()
@@ -107,6 +95,63 @@ class feedback : AppCompatActivity() {
         submitButton.setOnClickListener {
             submitReview()
         }
+
+        // FIXED: Load existing review from server
+        loadExistingReview()
+    }
+
+    private fun loadExistingReview() {
+        val userId = databaseHelper.getUserId() ?: return
+
+        if (restaurantId <= 0) {
+            Log.e("FeedbackDebug", "Invalid restaurant ID")
+            return
+        }
+
+        val url = "${Global.BASE_URL}review(get).php?user_id=$userId&restaurant_id=$restaurantId"
+        Log.d("FeedbackDebug", "Loading existing review from: $url")
+
+        val request = StringRequest(
+            Request.Method.GET, url,
+            { response ->
+                try {
+                    Log.d("FeedbackDebug", "Response: $response")
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success", false)
+
+                    if (success) {
+                        val review = json.getJSONObject("review")
+                        val existingRating = review.getInt("rating")
+                        val existingComment = review.getString("comment")
+                        reviewId = review.getInt("review_id")
+
+                        // Load existing rating
+                        if (existingRating > 0) {
+                            selectedRating = existingRating
+                            updateStarRating(existingRating)
+                        }
+
+                        // Load existing comment
+                        if (existingComment.isNotEmpty()) {
+                            feedbackBox.setText(existingComment)
+                            updateCharacterCount()
+                        }
+
+                        Log.d("FeedbackDebug", "Loaded existing review: rating=$existingRating")
+                    } else {
+                        Log.d("FeedbackDebug", "No existing review found")
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                    Log.e("FeedbackDebug", "Error loading existing review: ${e.message}")
+                }
+            },
+            { error ->
+                Log.e("FeedbackDebug", "Network error loading review: ${error.message}")
+            }
+        )
+
+        Volley.newRequestQueue(this).add(request)
     }
 
     private fun setupStarRating() {

@@ -103,6 +103,20 @@ class reviews : AppCompatActivity() {
 
                         for (i in 0 until reviewsArray.length()) {
                             val item = reviewsArray.getJSONObject(i)
+
+                            // FIXED: Format address to show only last 3 parts
+                            val fullAddress = item.optString("address", "")
+                            val formattedAddress = if (fullAddress.isNotEmpty()) {
+                                val addressParts = fullAddress.split(",")
+                                if (addressParts.size > 3) {
+                                    addressParts.takeLast(3).joinToString(",")
+                                } else {
+                                    fullAddress
+                                }
+                            } else {
+                                "Address not available"
+                            }
+
                             val review = ReviewModel(
                                 reviewId = item.getInt("review_id"),
                                 restaurantId = item.getInt("restaurant_id"),
@@ -111,7 +125,7 @@ class reviews : AppCompatActivity() {
                                 comment = item.getString("comment"),
                                 createdAt = item.getString("created_at"),
                                 businessName = item.getString("business_name"),
-                                address = item.optString("address", ""),
+                                address = formattedAddress,
                                 restaurantImage = item.optString("restaurant_image", null)
                             )
                             reviews.add(review)
