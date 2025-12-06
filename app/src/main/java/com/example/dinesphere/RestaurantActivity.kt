@@ -1,7 +1,9 @@
 package com.example.dinesphere
 
+import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -23,12 +25,14 @@ class RestaurantActivity : AppCompatActivity() {
     private var isSaved = false
     private var restaurantId = -1
     private var distanceKm = 0.0
+    private var phoneNumber: String? = null // Storage for the phone number
 
     // Views
     private lateinit var txtTime: TextView
     private lateinit var btnCar: LinearLayout
     private lateinit var btnCycle: LinearLayout
     private lateinit var btnWalk: LinearLayout
+    private lateinit var btnCall: LinearLayout // Added call button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +53,7 @@ class RestaurantActivity : AppCompatActivity() {
         btnCar = findViewById(R.id.btn_car)
         btnCycle = findViewById(R.id.btn_cycle)
         btnWalk = findViewById(R.id.btn_walk)
+        btnCall = findViewById(R.id.btn_call) // Initialize call button view
 
         // 2. Extract Data passed from Homepage
         restaurantId = intent.getIntExtra("RESTAURANT_ID", -1)
@@ -56,9 +61,9 @@ class RestaurantActivity : AppCompatActivity() {
         val address = intent.getStringExtra("ADDRESS") ?: "Address"
         val imageUrl = intent.getStringExtra("IMAGE_URL")
         val rating = intent.getFloatExtra("RATING", 4.0f)
-        // Get the distance calculated by the PHP API
         distanceKm = intent.getDoubleExtra("DISTANCE", 0.0)
         isSaved = intent.getBooleanExtra("IS_SAVED", false)
+        phoneNumber = intent.getStringExtra("PHONE") // Extract the phone number
 
         // 3. Populate Views
         txtName.text = name
@@ -82,20 +87,25 @@ class RestaurantActivity : AppCompatActivity() {
         updateSaveIcon(btnSave, isSaved)
 
         // --- TRANSPORT LOGIC ---
-        // 1. Set Default Mode (Car)
-        updateTimeAndSelection(btnCar, 30) // Assuming avg car speed is 30 km/h
+        updateTimeAndSelection(btnCar, 30) // Default Mode (Car)
 
-        // 2. Click Listeners for Transport
-        btnCar.setOnClickListener {
-            updateTimeAndSelection(btnCar, 30)
-        }
-        btnCycle.setOnClickListener {
-            updateTimeAndSelection(btnCycle, 15) // Avg cycle speed 15 km/h
-        }
-        btnWalk.setOnClickListener {
-            updateTimeAndSelection(btnWalk, 5) // Avg walking speed 5 km/h
-        }
+        btnCar.setOnClickListener { updateTimeAndSelection(btnCar, 30) }
+        btnCycle.setOnClickListener { updateTimeAndSelection(btnCycle, 15) }
+        btnWalk.setOnClickListener { updateTimeAndSelection(btnWalk, 5) }
         // -----------------------
+
+        // 4. CALL BUTTON FUNCTIONALITY
+        btnCall.setOnClickListener {
+            if (!phoneNumber.isNullOrEmpty()) {
+                // ACTION_DIAL opens the dialer app with the number pre-filled.
+                // The user still has to press the call button in the dialer.
+                val dialIntent = Intent(Intent.ACTION_DIAL)
+                dialIntent.data = Uri.parse("tel:$phoneNumber")
+                startActivity(dialIntent)
+            } else {
+                Toast.makeText(this, "Restaurant phone number not available", Toast.LENGTH_SHORT).show()
+            }
+        }
 
         // Back Button
         btnBack.setOnClickListener { finish() }
@@ -114,7 +124,6 @@ class RestaurantActivity : AppCompatActivity() {
         btnWalk.backgroundTintList = grayColor
 
         // 2. Set selected button to No Tint/White (Selected state)
-        // Assuming your drawable 'pill_back' is white by default
         selectedBtn.backgroundTintList = null
 
         // 3. Calculate Time: (Distance / Speed) * 60 minutes

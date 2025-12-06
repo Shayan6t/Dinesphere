@@ -141,6 +141,7 @@ class homepage : AppCompatActivity() {
         intent.putExtra("IS_SAVED", restaurant.isSaved)
         intent.putExtra("LAT", restaurant.latitude)
         intent.putExtra("LNG", restaurant.longitude)
+        intent.putExtra("PHONE", restaurant.phone) // ADDED: Passing phone number
         startActivity(intent)
     }
 
@@ -396,6 +397,7 @@ class homepage : AppCompatActivity() {
                                 restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
+                                phone = item.optString("phone", null), // UPDATED: Extract phone
                                 latitude = item.getDouble("latitude"),
                                 longitude = item.getDouble("longitude"),
                                 imageUrl = item.optString("image_url", null),
@@ -464,6 +466,7 @@ class homepage : AppCompatActivity() {
                                 restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
+                                phone = item.optString("phone", null), // UPDATED: Extract phone
                                 latitude = item.getDouble("latitude"),
                                 longitude = item.getDouble("longitude"),
                                 imageUrl = item.optString("image_url", null),

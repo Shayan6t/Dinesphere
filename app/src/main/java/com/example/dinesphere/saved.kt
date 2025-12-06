@@ -109,6 +109,7 @@ class saved : AppCompatActivity() {
                                 restaurantId = item.getInt("restaurant_id"),
                                 businessName = item.getString("business_name"),
                                 address = item.getString("address"),
+                                phone = item.optString("phone", null),
                                 latitude = item.getDouble("latitude"),
                                 longitude = item.getDouble("longitude"),
                                 imageUrl = item.optString("image_url", null),
