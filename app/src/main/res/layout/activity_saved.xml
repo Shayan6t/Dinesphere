@@ -128,6 +128,11 @@
                 android:fontFamily="@font/montserrat_med"
                 android:textSize="13sp"
                 android:layout_marginTop="5dp" />
+            <View
+                android:layout_width="6dp"
+                android:layout_height="6dp"
+                android:background="@drawable/button_box_o"
+                android:layout_marginTop="3dp" />
         </LinearLayout>
         <LinearLayout
             android:id="@+id/review"
