@@ -35,10 +35,10 @@ class homepage : AppCompatActivity() {
     private lateinit var navProfile: LinearLayout
     private lateinit var navReview: LinearLayout
 
-
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
     private val savedRestaurantIds = mutableSetOf<Int>()
+    private val within5kmRestaurantIds = mutableSetOf<Int>() // Track 5km restaurants
 
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -60,7 +60,6 @@ class homepage : AppCompatActivity() {
 
         val notificationButton: ImageButton = findViewById(R.id.notification_icon)
 
-
         // Initialize views
         currAddress = findViewById(R.id.curr_address)
         addressIcon = findViewById(R.id.address_icon)
@@ -70,28 +69,28 @@ class homepage : AppCompatActivity() {
 
         // Initialize bottom navigation
         navSaved = findViewById(R.id.save)
-        navReview = findViewById(R.id.review)  // FIXED: Added initialization
+        navReview = findViewById(R.id.review)
         navProfile = findViewById(R.id.profile)
 
-        // Setup RecyclerViews with horizontal layout
+        // Setup RecyclerViews
         setupRecyclerViews()
 
         // Load user location from database
         loadUserLocationFromDatabase()
 
-        // Address icon click listener - navigate to change location
+        // Address icon click - navigate to location1
         addressIcon.setOnClickListener {
-            // TODO: Navigate to location change screen
-            Toast.makeText(this, "Change location", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, location1::class.java)
+            startActivity(intent)
         }
 
-        // Search bar click listener - navigate to search activity
+        // Search bar click - navigate to search activity
         searchBar.setOnClickListener {
             val intent = Intent(this, search::class.java)
             startActivity(intent)
         }
 
-        // Disable focus on search bar so it opens search screen instead of keyboard
+        // Disable focus on search bar
         searchBar.isFocusable = false
         searchBar.isClickable = true
 
@@ -113,14 +112,13 @@ class homepage : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Profile navigation click - pass necessary data (user id, address, lat/lng)
+        // Profile navigation click
         navProfile.setOnClickListener {
             val intent = Intent(this, profile::class.java)
             val userId = databaseHelper.getUserId()
             if (userId != null) {
                 intent.putExtra("USER_ID", userId)
             }
-            // pass currently displayed address and last-known coordinates
             intent.putExtra("ADDRESS", currAddress.text.toString())
             intent.putExtra("LAT", userLat)
             intent.putExtra("LNG", userLng)
@@ -130,7 +128,6 @@ class homepage : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        // Reload saved restaurant IDs when returning to this activity
         loadSavedRestaurantIds()
     }
 
@@ -171,7 +168,6 @@ class homepage : AppCompatActivity() {
     }
 
     private fun onRestaurantClick(restaurant: Restaurant) {
-        // Navigate to RestaurantActivity and pass data
         val intent = Intent(this, RestaurantActivity::class.java)
         intent.putExtra("RESTAURANT_ID", restaurant.restaurantId)
         intent.putExtra("NAME", restaurant.businessName)
@@ -188,10 +184,8 @@ class homepage : AppCompatActivity() {
 
     private fun handleSaveClick(restaurant: Restaurant, position: Int, adapter: RestaurantAdapter) {
         if (restaurant.isSaved) {
-            // Unsave the restaurant
             unsaveRestaurant(restaurant, position, adapter)
         } else {
-            // Save the restaurant
             saveRestaurant(restaurant, position, adapter)
         }
     }
@@ -437,10 +431,15 @@ class homepage : AppCompatActivity() {
                     if (success) {
                         val restaurantsArray = json.getJSONArray("restaurants")
                         val restaurants = mutableListOf<Restaurant>()
+                        within5kmRestaurantIds.clear() // Clear before adding new ones
 
                         for (i in 0 until restaurantsArray.length()) {
                             val item = restaurantsArray.getJSONObject(i)
                             val restaurantId = item.getInt("restaurant_id")
+
+                            // Track this restaurant ID
+                            within5kmRestaurantIds.add(restaurantId)
+
                             val restaurant = Restaurant(
                                 restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
@@ -510,6 +509,12 @@ class homepage : AppCompatActivity() {
                         for (i in 0 until restaurantsArray.length()) {
                             val item = restaurantsArray.getJSONObject(i)
                             val restaurantId = item.getInt("restaurant_id")
+
+                            // FILTER OUT: Skip restaurants that are already in the 5km list
+                            if (within5kmRestaurantIds.contains(restaurantId)) {
+                                continue
+                            }
+
                             val restaurant = Restaurant(
                                 restaurantId = restaurantId,
                                 businessName = item.getString("business_name"),
@@ -526,7 +531,7 @@ class homepage : AppCompatActivity() {
                             restaurants.add(restaurant)
                         }
 
-                        Log.d("HomepageDebug", "Loaded ${restaurants.size} total restaurants")
+                        Log.d("HomepageDebug", "Loaded ${restaurants.size} total restaurants (filtered)")
                         allRestaurantAdapter.updateRestaurants(restaurants)
                     } else {
                         val message = json.optString("message", "Failed to load restaurants")
