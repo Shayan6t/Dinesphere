@@ -1,8 +1,10 @@
 package com.example.dinesphere
 
+import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
 import android.graphics.Color
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -90,14 +92,12 @@ class RestaurantActivity : AppCompatActivity() {
         restaurantLat = intent.getDoubleExtra("LAT", 0.0)
         restaurantLng = intent.getDoubleExtra("LNG", 0.0)
 
-        // Load User Location
-        loadUserLocation()
-
         // Populate Views
         txtName.text = name
         txtLocation.text = address
         txtRating.text = rating.toString()
         if (!imageUrl.isNullOrEmpty()) {
+            // Picasso automatically handles basic caching
             Picasso.get().load(imageUrl).fit().centerCrop().into(imgRestaurant)
         } else {
             imgRestaurant.setImageResource(R.drawable.img1)
@@ -105,9 +105,18 @@ class RestaurantActivity : AppCompatActivity() {
         updateSaveIcon(btnSave, isSaved)
         updateTimeAndSelection(btnCar, 30)
 
+        // --- ONLINE / OFFLINE LOGIC ---
+        if (isNetworkAvailable()) {
+            loadUserLocation()
+        } else {
+            Toast.makeText(this, "Offline Mode: Some features limited", Toast.LENGTH_SHORT).show()
+        }
+
         // Routes Button
         btnRoutes.setOnClickListener {
-            trackRestaurantView()
+            if (isNetworkAvailable()) {
+                trackRestaurantView() // Only track if online
+            }
             openGoogleMapsDirections()
         }
 
@@ -136,6 +145,7 @@ class RestaurantActivity : AppCompatActivity() {
         }
 
         btnBack.setOnClickListener { finish() }
+
         btnSave.setOnClickListener {
             if (isSaved) unsaveRestaurant(btnSave) else saveRestaurant(btnSave)
         }
@@ -144,7 +154,7 @@ class RestaurantActivity : AppCompatActivity() {
         navHome.setOnClickListener {
             val intent = Intent(this, homepage::class.java)
             startActivity(intent)
-            finish()
+            finish() // Finish this to prevent stacking
         }
 
         // Bottom Navigation - SAVED
@@ -170,7 +180,17 @@ class RestaurantActivity : AppCompatActivity() {
         }
     }
 
+    // --- HELPER: Check Network ---
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
     private fun trackRestaurantView() {
+        // Double check network before firing logic
+        if (!isNetworkAvailable()) return
+
         val userId = databaseHelper.getUserId() ?: return
 
         val url = "${Global.BASE_URL}review(get).php?user_id=$userId&restaurant_id=$restaurantId"
@@ -198,6 +218,8 @@ class RestaurantActivity : AppCompatActivity() {
     }
 
     private fun createInitialReviewEntry() {
+        if (!isNetworkAvailable()) return
+
         val userId = databaseHelper.getUserId() ?: return
         val url = "${Global.BASE_URL}review(post).php"
 
@@ -258,8 +280,23 @@ class RestaurantActivity : AppCompatActivity() {
     }
 
     private fun openGoogleMapsDirections() {
-        if (userLat == null || userLng == null || restaurantLat == 0.0 || restaurantLng == 0.0) {
-            Toast.makeText(this, "Waiting for location data. Try again in a moment.", Toast.LENGTH_LONG).show()
+        // If we don't have user location (likely due to offline mode)
+        if (userLat == null || userLng == null) {
+            if (restaurantLat != 0.0 && restaurantLng != 0.0) {
+                // We can at least open maps to the destination, just without a specific start point
+                val uri = "geo:$restaurantLat,$restaurantLng?q=$restaurantLat,$restaurantLng($restaurantLat,$restaurantLng)"
+                val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+                mapIntent.setPackage("com.google.android.apps.maps")
+                try {
+                    startActivity(mapIntent)
+                } catch (e: Exception) {
+                    mapIntent.setPackage(null)
+                    startActivity(mapIntent)
+                }
+                return
+            }
+
+            Toast.makeText(this, "Location unavailable offline.", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -296,6 +333,10 @@ class RestaurantActivity : AppCompatActivity() {
     }
 
     private fun updateSaveIcon(imageView: ImageView, saved: Boolean) {
+        // Always use save_w (white icon resource), just tint it
+        // Ensure you have R.drawable.save_w or similar
+        imageView.setImageResource(R.drawable.save_w)
+
         if (saved) {
             imageView.setColorFilter(ContextCompat.getColor(this, R.color.orange))
         } else {
@@ -310,6 +351,16 @@ class RestaurantActivity : AppCompatActivity() {
             Toast.makeText(this, "Please log in to save", Toast.LENGTH_SHORT).show()
             return
         }
+
+        // --- OFFLINE CHECK ---
+        if (!isNetworkAvailable()) {
+            databaseHelper.addPendingAction("SAVE", restaurantId)
+            isSaved = true
+            updateSaveIcon(btnSave, true)
+            Toast.makeText(this, "Saved (Offline)", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // ---------------------
 
         val url = "${Global.BASE_URL}saved(post).php"
 
@@ -335,6 +386,17 @@ class RestaurantActivity : AppCompatActivity() {
 
     private fun unsaveRestaurant(btnSave: ImageView) {
         val userId = databaseHelper.getUserId() ?: return
+
+        // --- OFFLINE CHECK ---
+        if (!isNetworkAvailable()) {
+            databaseHelper.addPendingAction("UNSAVE", restaurantId)
+            isSaved = false
+            updateSaveIcon(btnSave, false)
+            Toast.makeText(this, "Unsaved (Offline)", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // ---------------------
+
         val url = "${Global.BASE_URL}saved(delete).php"
 
         val request = object : StringRequest(Request.Method.POST, url, { response ->
