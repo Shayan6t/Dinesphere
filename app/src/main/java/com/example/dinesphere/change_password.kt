@@ -21,8 +21,9 @@ class change_password : AppCompatActivity() {
     private lateinit var passwordToggle2: ImageView
     private lateinit var changeBtn: RelativeLayout
     private lateinit var backButton: ImageView
+    private lateinit var databaseHelper: DatabaseHelper
 
-    private var userEmail: String? = null
+    private var email: String? = null
     private var isPassword1Visible = false
     private var isPassword2Visible = false
 
@@ -30,11 +31,15 @@ class change_password : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_change_password)
 
-        // Get email from intent
-        userEmail = intent.getStringExtra("USER_EMAIL")
+        // Initialize DatabaseHelper (Only used for clearing session at the end)
+        databaseHelper = DatabaseHelper(this)
 
-        if (userEmail.isNullOrEmpty()) {
-            Toast.makeText(this, "Error: Email not found", Toast.LENGTH_SHORT).show()
+        // 1. GET EMAIL FROM INTENT (Passed from forget_password)
+        email = intent.getStringExtra("USER_EMAIL")
+
+        // 2. Validate that email exists
+        if (email.isNullOrEmpty()) {
+            Toast.makeText(this, "Error: Email not found. Please try again.", Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -50,25 +55,21 @@ class change_password : AppCompatActivity() {
         // Password visibility toggles
         passwordToggle1.setOnClickListener {
             isPassword1Visible = !isPassword1Visible
-            if (isPassword1Visible) {
-                passwordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                passwordToggle1.setImageResource(R.drawable.eye_open)
-            } else {
-                passwordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                passwordToggle1.setImageResource(R.drawable.hide_eye)
-            }
+            passwordInput.inputType = if (isPassword1Visible)
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            else
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            passwordToggle1.setImageResource(if (isPassword1Visible) R.drawable.eye_open else R.drawable.hide_eye)
             passwordInput.setSelection(passwordInput.text.length)
         }
 
         passwordToggle2.setOnClickListener {
             isPassword2Visible = !isPassword2Visible
-            if (isPassword2Visible) {
-                confirmPasswordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
-                passwordToggle2.setImageResource(R.drawable.eye_open)
-            } else {
-                confirmPasswordInput.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
-                passwordToggle2.setImageResource(R.drawable.hide_eye)
-            }
+            confirmPasswordInput.inputType = if (isPassword2Visible)
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            else
+                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
+            passwordToggle2.setImageResource(if (isPassword2Visible) R.drawable.eye_open else R.drawable.hide_eye)
             confirmPasswordInput.setSelection(confirmPasswordInput.text.length)
         }
 
@@ -92,13 +93,12 @@ class change_password : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            resetPassword(userEmail!!, password)
+            // Call reset function with the email captured from Intent
+            resetPassword(email!!, password)
         }
 
         // Back button
-        backButton.setOnClickListener {
-            finish()
-        }
+        backButton.setOnClickListener { finish() }
     }
 
     private fun resetPassword(email: String, newPassword: String) {
@@ -111,6 +111,9 @@ class change_password : AppCompatActivity() {
                     val json = JSONObject(response)
                     if (json.optBoolean("success")) {
                         Toast.makeText(this, "Password reset successfully!", Toast.LENGTH_LONG).show()
+
+                        // Clear session (logout user to force re-login with new password)
+                        databaseHelper.clearSession()
 
                         // Navigate to login screen
                         val intent = Intent(this, login::class.java)

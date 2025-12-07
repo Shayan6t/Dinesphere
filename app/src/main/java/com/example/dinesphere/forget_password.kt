@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
@@ -20,8 +21,12 @@ class forget_password : AppCompatActivity() {
 
     private lateinit var emailInput: EditText
     private lateinit var sendOtpBtn: RelativeLayout
-    private lateinit var changeBtn: RelativeLayout
+    private lateinit var verifyBtn: RelativeLayout
     private lateinit var backButton: ImageView
+    private lateinit var otpNotificationBar: RelativeLayout
+    private lateinit var otpNotificationText: TextView
+    private lateinit var closeNotificationBtn: ImageView
+    private lateinit var databaseHelper: DatabaseHelper
 
     private lateinit var otp1: EditText
     private lateinit var otp2: EditText
@@ -30,21 +35,25 @@ class forget_password : AppCompatActivity() {
     private lateinit var otp5: EditText
     private lateinit var otp6: EditText
 
+    private var generatedOtp: String? = null
     private var userEmail: String? = null
-    private var isOtpSent = false
+    private var userId: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_forget_password)
 
-        // Get email from intent (if passed from profile)
+        // Get user email from Intent (passed from profile)
         userEmail = intent.getStringExtra("USER_EMAIL")
 
         // Initialize views
         emailInput = findViewById(R.id.email_input)
         sendOtpBtn = findViewById(R.id.sendOTP_btn)
-        changeBtn = findViewById(R.id.change_btn)
+        verifyBtn = findViewById(R.id.verify_btn)
         backButton = findViewById(R.id.back)
+        otpNotificationBar = findViewById(R.id.otp_notification_bar)
+        otpNotificationText = findViewById(R.id.otp_notification_text)
+        closeNotificationBtn = findViewById(R.id.close_notification)
 
         otp1 = findViewById(R.id.otp1)
         otp2 = findViewById(R.id.otp2)
@@ -58,25 +67,51 @@ class forget_password : AppCompatActivity() {
             emailInput.setText(userEmail)
         }
 
+        // Hide notification initially
+        otpNotificationBar.visibility = View.GONE
+
         // Disable OTP fields initially
         enableOtpFields(false)
 
         // Setup OTP auto-focus
         setupOtpInputs()
 
+        // Close notification button
+        closeNotificationBtn.setOnClickListener {
+            otpNotificationBar.visibility = View.GONE
+        }
+
         // Send OTP button
         sendOtpBtn.setOnClickListener {
             val email = emailInput.text.toString().trim()
+
             if (email.isEmpty()) {
                 Toast.makeText(this, "Please enter your email", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            sendOtp(email)
+
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                Toast.makeText(this, "Please enter a valid email", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            // Generate a random 6-digit OTP
+            generatedOtp = (100000..999999).random().toString()
+            userEmail = email
+
+            // Show the OTP notification
+            showOtpNotification(generatedOtp!!)
+
+            // Enable OTP input fields
+            enableOtpFields(true)
+            otp1.requestFocus()
+
+            Toast.makeText(this, "OTP sent successfully", Toast.LENGTH_SHORT).show()
         }
 
-        // Verify OTP and navigate to change password
-        changeBtn.setOnClickListener {
-            if (!isOtpSent) {
+        // Verify OTP button
+        verifyBtn.setOnClickListener {
+            if (generatedOtp == null) {
                 Toast.makeText(this, "Please request OTP first", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
@@ -89,7 +124,7 @@ class forget_password : AppCompatActivity() {
                 return@setOnClickListener
             }
 
-            verifyOtp(emailInput.text.toString().trim(), otp)
+            verifyOtp(otp)
         }
 
         // Back button
@@ -124,90 +159,35 @@ class forget_password : AppCompatActivity() {
         }
     }
 
-    private fun sendOtp(email: String) {
-        val url = "${Global.BASE_URL}send_otp.php"
+    private fun showOtpNotification(otp: String) {
+        otpNotificationText.text = "Your OTP is: $otp"
+        otpNotificationBar.visibility = View.VISIBLE
 
-        android.util.Log.d("ForgetPassword", "Sending OTP to: $email")
-        android.util.Log.d("ForgetPassword", "API URL: $url")
-
-        val request = object : StringRequest(
-            Request.Method.POST, url,
-            { response ->
-                android.util.Log.d("ForgetPassword", "Response: $response")
-                try {
-                    val json = JSONObject(response)
-                    if (json.optBoolean("success")) {
-                        isOtpSent = true
-                        Toast.makeText(this, "OTP sent to your email", Toast.LENGTH_LONG).show()
-                        // Enable OTP input fields
-                        enableOtpFields(true)
-                        otp1.requestFocus()
-                    } else {
-                        val message = json.optString("message", "Failed to send OTP")
-                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                        android.util.Log.e("ForgetPassword", "Error: $message")
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                    android.util.Log.e("ForgetPassword", "Parse Error: ${e.message}")
-                    android.util.Log.e("ForgetPassword", "Raw Response: $response")
-                }
-            },
-            { error ->
-                val errorMsg = error.networkResponse?.let {
-                    "Status: ${it.statusCode}, Data: ${String(it.data)}"
-                } ?: "Network error: ${error.message}"
-
-                Toast.makeText(this, "Network error. Check connection.", Toast.LENGTH_SHORT).show()
-                android.util.Log.e("ForgetPassword", "Network Error: $errorMsg")
-            }
-        ) {
-            override fun getParams(): Map<String, String> {
-                return mapOf("email" to email)
-            }
-        }
-
-        Volley.newRequestQueue(this).add(request)
+        // Auto-hide after 15 seconds
+        otpNotificationBar.postDelayed({
+            otpNotificationBar.visibility = View.GONE
+        }, 15000)
     }
 
-    private fun verifyOtp(email: String, otp: String) {
-        val url = "${Global.BASE_URL}verify_otp.php"
+    private fun verifyOtp(enteredOtp: String) {
+        if (enteredOtp == generatedOtp) {
+            Toast.makeText(this, "OTP verified successfully!", Toast.LENGTH_SHORT).show()
 
-        val request = object : StringRequest(
-            Request.Method.POST, url,
-            { response ->
-                try {
-                    val json = JSONObject(response)
-                    if (json.optBoolean("success")) {
-                        Toast.makeText(this, "OTP verified successfully", Toast.LENGTH_SHORT).show()
+            // Hide notification
+            otpNotificationBar.visibility = View.GONE
 
-                        // Navigate to change password screen
-                        val intent = Intent(this, change_password::class.java)
-                        intent.putExtra("USER_EMAIL", email)
-                        startActivity(intent)
-                        finish()
-                    } else {
-                        val message = json.optString("message", "Invalid OTP")
-                        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
-                        clearOtpFields()
-                    }
-                } catch (e: Exception) {
-                    Toast.makeText(this, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
-                }
-            },
-            { error ->
-                Toast.makeText(this, "Network error. Please try again.", Toast.LENGTH_SHORT).show()
-            }
-        ) {
-            override fun getParams(): Map<String, String> {
-                return mapOf(
-                    "email" to email,
-                    "otp" to otp
-                )
-            }
+            // Navigate to change password screen with USER_EMAIL
+            val intent = Intent(this, change_password::class.java)
+
+            // PASS THE EMAIL HERE
+            intent.putExtra("USER_EMAIL", userEmail)
+
+            startActivity(intent)
+            finish()
+        } else {
+            Toast.makeText(this, "Invalid OTP. Please try again.", Toast.LENGTH_SHORT).show()
+            clearOtpFields()
         }
-
-        Volley.newRequestQueue(this).add(request)
     }
 
     private fun enableOtpFields(enable: Boolean) {

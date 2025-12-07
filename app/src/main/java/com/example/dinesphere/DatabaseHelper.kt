@@ -287,6 +287,7 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         }
     }
 
+
     fun getCachedMenuItems(categoryId: Int): List<MenuItem> {
         val list = mutableListOf<MenuItem>()
         val db = readableDatabase
@@ -306,4 +307,5 @@ class DatabaseHelper(context: Context) : SQLiteOpenHelper(context, DATABASE_NAME
         db.close()
         return list
     }
+
 }
