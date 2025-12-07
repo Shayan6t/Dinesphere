@@ -129,6 +129,14 @@ class profile : AppCompatActivity() {
             startActivity(intent)
         }
     }
+    override fun onResume() {
+        super.onResume()
+
+        // Reload profile data when returning to this screen
+        if (!currentUserId.isNullOrEmpty()) {
+            loadProfileDetails(currentUserId!!)
+        }
+    }
 
     // Fetches full profile details from the server using the USER_ID
     private fun loadProfileDetails(userId: String) {
