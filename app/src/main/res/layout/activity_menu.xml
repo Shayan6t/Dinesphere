@@ -18,33 +18,27 @@
     <EditText
         android:id="@+id/search_bar"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
+        android:layout_height="50dp"
         android:fontFamily="@font/montserrat_med"
-        android:layout_toRightOf="@id/back"
+        android:layout_below="@+id/back"
         android:background="@drawable/edittext_box"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:layout_marginTop="40dp"/>
+        android:layout_marginTop="10dp"
+        android:hint="Search restaurants..."
+        android:textColorHint="#888888"
+        android:textColor="@color/white"
+        android:paddingLeft="50dp"
+        android:paddingRight="15dp"/>
+
     <ImageButton
-        android:id="@+id/search_btn"
+        android:id="@+id/search_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/search_icon"
         android:layout_alignTop="@id/search_bar"
         android:layout_alignStart="@id/search_bar"
         android:layout_margin="13dp"/>
-    <TextView
-        android:id="@+id/search_text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Search To See if Available"
-        android:fontFamily="@font/montserrat_med"
-        android:textColor="@color/white"
-        android:textSize="14sp"
-        android:layout_alignTop="@id/search_bar"
-        android:layout_toRightOf="@id/search_btn"
-        android:layout_marginLeft="5dp"
-        android:layout_marginTop="15dp"/>
     <LinearLayout
         android:id="@+id/info"
         android:layout_width="match_parent"
