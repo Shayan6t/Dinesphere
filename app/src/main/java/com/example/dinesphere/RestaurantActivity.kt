@@ -51,6 +51,12 @@ class RestaurantActivity : AppCompatActivity() {
     private lateinit var navReview: LinearLayout
     private lateinit var navProfile: LinearLayout
 
+    private lateinit var star1: ImageView
+    private lateinit var star2: ImageView
+    private lateinit var star3: ImageView
+    private lateinit var star4: ImageView
+    private lateinit var star5: ImageView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_restaurant)
@@ -64,6 +70,12 @@ class RestaurantActivity : AppCompatActivity() {
         val txtLocation = findViewById<TextView>(R.id.location)
         val txtRating = findViewById<TextView>(R.id.ratingScore)
         val btnSave = findViewById<ImageView>(R.id.save_btn)
+
+        star1 = findViewById(R.id.star1)
+        star2 = findViewById(R.id.star2)
+        star3 = findViewById(R.id.star3)
+        star4 = findViewById(R.id.star4)
+        star5 = findViewById(R.id.star5)
 
         txtTime = findViewById(R.id.deliveryTime)
         btnCar = findViewById(R.id.btn_car)
@@ -91,6 +103,8 @@ class RestaurantActivity : AppCompatActivity() {
 
         restaurantLat = intent.getDoubleExtra("LAT", 0.0)
         restaurantLng = intent.getDoubleExtra("LNG", 0.0)
+
+        setRating(rating)
 
         // Populate Views
         txtName.text = name
@@ -186,6 +200,23 @@ class RestaurantActivity : AppCompatActivity() {
         val activeNetworkInfo = connectivityManager.activeNetworkInfo
         return activeNetworkInfo != null && activeNetworkInfo.isConnected
     }
+    private fun setRating(rating: Float) {
+        val stars = arrayOf(star1, star2, star3, star4, star5)
+        val greenColor = 0xFF45B884.toInt()
+        val whiteColor = ContextCompat.getColor(this, R.color.white)
+
+        val fullStars = rating.toInt() // 2.5 → 2
+
+        for (i in stars.indices) {
+            if (i < fullStars) {
+                stars[i].setColorFilter(greenColor)   // color full stars
+            } else {
+                stars[i].setColorFilter(whiteColor)   // keep all others white
+            }
+        }
+    }
+
+
 
     private fun trackRestaurantView() {
         // Double check network before firing logic
