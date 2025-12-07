@@ -1,7 +1,9 @@
 package com.example.dinesphere
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.util.Log
 import android.widget.EditText
@@ -75,8 +77,14 @@ class homepage : AppCompatActivity() {
         // Setup RecyclerViews
         setupRecyclerViews()
 
-        // Load user location from database
-        loadUserLocationFromDatabase()
+        // Load user location (Check Network First)
+        if (isNetworkAvailable()) {
+            loadUserLocationFromDatabase()
+        } else {
+            currAddress.text = "Offline Mode"
+            // Load cached data immediately if offline
+            loadOfflineData()
+        }
 
         // Address icon click - navigate to location1
         addressIcon.setOnClickListener {
@@ -128,7 +136,83 @@ class homepage : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        loadSavedRestaurantIds()
+        // If we have internet, try to sync any offline actions
+        if (isNetworkAvailable()) {
+            syncPendingActions()
+            loadSavedRestaurantIds()
+        } else {
+            // If offline, just ensure lists are populated from cache
+            loadOfflineData()
+        }
+    }
+
+    // --- Helper: Check Network ---
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
+    // --- Helper: Load Data from SQLite (Offline) ---
+    private fun loadOfflineData() {
+        val cachedRestaurants = databaseHelper.getCachedRestaurants()
+
+        if (cachedRestaurants.isNotEmpty()) {
+            // Separate into "Nearby" (<= 5km) and "All" (> 5km) locally
+            val nearby = mutableListOf<Restaurant>()
+            val others = mutableListOf<Restaurant>()
+
+            for (res in cachedRestaurants) {
+                if (res.distanceKm <= 5.0) {
+                    nearby.add(res)
+                    within5kmRestaurantIds.add(res.restaurantId)
+                } else {
+                    others.add(res)
+                }
+            }
+
+            restaurantAdapter.updateRestaurants(nearby)
+            allRestaurantAdapter.updateRestaurants(others)
+            Log.d("HomepageDebug", "Loaded offline data: ${nearby.size} nearby, ${others.size} others")
+        }
+    }
+
+    // --- Helper: Sync Pending Actions ---
+    private fun syncPendingActions() {
+        val pending = databaseHelper.getPendingActions()
+        if (pending.isEmpty()) return
+
+        Toast.makeText(this, "Syncing offline changes...", Toast.LENGTH_SHORT).show()
+
+        for ((action, id) in pending) {
+            if (action == "SAVE") {
+                performSyncRequest(id, true)
+            } else if (action == "UNSAVE") {
+                performSyncRequest(id, false)
+            }
+        }
+
+        // Clear queue after firing requests
+        databaseHelper.clearPendingActions()
+    }
+
+    private fun performSyncRequest(restaurantId: Int, isSave: Boolean) {
+        val userId = databaseHelper.getUserId() ?: return
+        val url = if (isSave) "${Global.BASE_URL}saved(post).php" else "${Global.BASE_URL}saved(delete).php"
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            { response -> Log.d("Sync", "Synced ID $restaurantId: $response") },
+            { error -> Log.e("Sync", "Failed to sync ID $restaurantId: ${error.message}") }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["user_id"] = userId
+                params["restaurant_id"] = restaurantId.toString()
+                return params
+            }
+        }
+        Volley.newRequestQueue(this).add(request)
     }
 
     private fun setupRecyclerViews() {
@@ -198,6 +282,20 @@ class homepage : AppCompatActivity() {
             return
         }
 
+        // --- OFFLINE CHECK ---
+        if (!isNetworkAvailable()) {
+            // Queue the action locally
+            databaseHelper.addPendingAction("SAVE", restaurant.restaurantId)
+
+            // Update UI immediately
+            restaurant.isSaved = true
+            adapter.updateRestaurantSaveStatus(position, true)
+
+            Toast.makeText(this, "Saved (Offline Mode)", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // ---------------------
+
         val url = "${Global.BASE_URL}saved(post).php"
         Log.d("HomepageDebug", "Saving restaurant: ${restaurant.businessName}")
 
@@ -247,6 +345,20 @@ class homepage : AppCompatActivity() {
             Toast.makeText(this, "User not logged in", Toast.LENGTH_SHORT).show()
             return
         }
+
+        // --- OFFLINE CHECK ---
+        if (!isNetworkAvailable()) {
+            // Queue the action locally
+            databaseHelper.addPendingAction("UNSAVE", restaurant.restaurantId)
+
+            // Update UI immediately
+            restaurant.isSaved = false
+            adapter.updateRestaurantSaveStatus(position, false)
+
+            Toast.makeText(this, "Unsaved (Offline Mode)", Toast.LENGTH_SHORT).show()
+            return
+        }
+        // ---------------------
 
         val url = "${Global.BASE_URL}saved(delete).php"
         Log.d("HomepageDebug", "Unsaving restaurant: ${restaurant.businessName}")
@@ -394,16 +506,10 @@ class homepage : AppCompatActivity() {
             },
             Response.ErrorListener { error ->
                 Log.e("HomepageDebug", "Location fetch error: ${error.message}")
-                currAddress.text = "Error loading location"
 
-                val errorMsg = when {
-                    error.networkResponse?.statusCode == 404 -> "Location not set. Please update your profile."
-                    error.networkResponse?.statusCode == 400 -> "Invalid user ID"
-                    error.networkResponse?.statusCode == 500 -> "Server error. Please try again later."
-                    else -> "Network error. Please check your connection."
-                }
-
-                Toast.makeText(this, errorMsg, Toast.LENGTH_LONG).show()
+                // If network fails, show cached data
+                currAddress.text = "Offline Mode"
+                loadOfflineData()
             }
         )
 
@@ -411,10 +517,20 @@ class homepage : AppCompatActivity() {
     }
 
     private fun loadRestaurantsWithin5km() {
+        // Always try to load cached data first for instant UI
+        val cachedRestaurants = databaseHelper.getCachedRestaurants()
+        if (cachedRestaurants.isNotEmpty()) {
+            val nearby = cachedRestaurants.filter { it.distanceKm <= 5.0 }
+            restaurantAdapter.updateRestaurants(nearby)
+        }
+
         if (userLat == 0.0 || userLng == 0.0) {
             Log.e("HomepageDebug", "Invalid user location: $userLat, $userLng")
             return
         }
+
+        // If offline, stop here
+        if (!isNetworkAvailable()) return
 
         val url = "${Global.BASE_URL}get_restaurants.php?latitude=$userLat&longitude=$userLng&max_distance=5"
 
@@ -457,6 +573,10 @@ class homepage : AppCompatActivity() {
                         }
 
                         Log.d("HomepageDebug", "Loaded ${restaurants.size} restaurants within 5km")
+
+                        // CACHE THIS DATA FOR OFFLINE USE
+                        databaseHelper.cacheRestaurants(restaurants)
+
                         restaurantAdapter.updateRestaurants(restaurants)
 
                         if (restaurants.isEmpty()) {
@@ -477,7 +597,7 @@ class homepage : AppCompatActivity() {
             },
             Response.ErrorListener { error ->
                 Log.e("HomepageDebug", "Volley error: ${error.message}")
-                Toast.makeText(this, "Failed to load nearby restaurants", Toast.LENGTH_SHORT).show()
+                // No Toast here because we likely already showed cached data
             }
         )
 
@@ -489,6 +609,9 @@ class homepage : AppCompatActivity() {
             Log.e("HomepageDebug", "Invalid user location: $userLat, $userLng")
             return
         }
+
+        // If offline, stop here (already loaded via loadOfflineData or cache check in 5km)
+        if (!isNetworkAvailable()) return
 
         val url = "${Global.BASE_URL}get_all_restaurants.php?latitude=$userLat&longitude=$userLng"
 
@@ -532,6 +655,10 @@ class homepage : AppCompatActivity() {
                         }
 
                         Log.d("HomepageDebug", "Loaded ${restaurants.size} total restaurants (filtered)")
+
+                        // CACHE THIS DATA AS WELL
+                        databaseHelper.cacheRestaurants(restaurants)
+
                         allRestaurantAdapter.updateRestaurants(restaurants)
                     } else {
                         val message = json.optString("message", "Failed to load restaurants")
