@@ -5,11 +5,14 @@ import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.Log
+import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.volley.Request
@@ -22,16 +25,24 @@ class search : AppCompatActivity() {
     private lateinit var searchBar: EditText
     private lateinit var backButton: ImageButton
     private lateinit var restaurantsRecycler: RecyclerView
+    private lateinit var nearButton: Button
+    private lateinit var allButton: Button
+    private lateinit var recommendationsHeading: TextView
 
     private lateinit var restaurantsAdapter: RestaurantAdapter
     private lateinit var databaseHelper: DatabaseHelper
 
     private val allRestaurants = mutableListOf<Restaurant>()
+    private val nearbyRestaurants = mutableListOf<Restaurant>() // 5km restaurants
     private val filteredRestaurants = mutableListOf<Restaurant>()
     private val savedRestaurantIds = mutableSetOf<Int>()
 
     private var userLat: Double = 0.0
     private var userLng: Double = 0.0
+
+    // Filter state
+    private var isNearSelected = true
+    private var isAllSelected = true
 
     // Bottom Navigation
     private lateinit var navHome: LinearLayout
@@ -49,6 +60,9 @@ class search : AppCompatActivity() {
         searchBar = findViewById(R.id.search_bar)
         backButton = findViewById(R.id.back)
         restaurantsRecycler = findViewById(R.id.restaurants_recycler)
+        nearButton = findViewById(R.id.near)
+        allButton = findViewById(R.id.all)
+        recommendationsHeading = findViewById(R.id.recommendations_heading)
 
         // Initialize bottom navigation
         navHome = findViewById(R.id.home)
@@ -75,6 +89,19 @@ class search : AppCompatActivity() {
                 filterRestaurants(s.toString())
             }
         })
+
+        // Filter button listeners
+        nearButton.setOnClickListener {
+            isNearSelected = !isNearSelected
+            updateFilterButtons()
+            applyFilters()
+        }
+
+        allButton.setOnClickListener {
+            isAllSelected = !isAllSelected
+            updateFilterButtons()
+            applyFilters()
+        }
 
         // Bottom Navigation - HOME
         navHome.setOnClickListener {
@@ -103,6 +130,57 @@ class search : AppCompatActivity() {
                 intent.putExtra("USER_ID", userId)
             }
             startActivity(intent)
+        }
+    }
+
+    private fun updateFilterButtons() {
+        // Update Near button
+        if (isNearSelected) {
+            nearButton.setBackgroundResource(R.drawable.button_box_o)
+            nearButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.orange)
+        } else {
+            nearButton.setBackgroundResource(R.drawable.button_box_o)
+            nearButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.gray)
+        }
+
+        // Update All button
+        if (isAllSelected) {
+            allButton.setBackgroundResource(R.drawable.button_box_o)
+            allButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.orange)
+        } else {
+            allButton.setBackgroundResource(R.drawable.button_box_o)
+            allButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.gray)
+        }
+    }
+
+    private fun applyFilters() {
+        filteredRestaurants.clear()
+
+        if (isNearSelected && isAllSelected) {
+            // Both selected: show all restaurants
+            filteredRestaurants.addAll(allRestaurants)
+            recommendationsHeading.text = "All Restaurants"
+        } else if (isNearSelected) {
+            // Only Near selected: show nearby (5km)
+            filteredRestaurants.addAll(nearbyRestaurants)
+            recommendationsHeading.text = "Nearby Restaurants (5km)"
+        } else if (isAllSelected) {
+            // Only All selected: show restaurants beyond 5km
+            filteredRestaurants.addAll(allRestaurants.filter { it.distanceKm > 5.0 })
+            recommendationsHeading.text = "Restaurants Beyond 5km"
+        } else {
+            // None selected: show nothing (or you could show all)
+            // For better UX, let's show all when none selected
+            filteredRestaurants.addAll(allRestaurants)
+            recommendationsHeading.text = "All Restaurants"
+        }
+
+        restaurantsAdapter.notifyDataSetChanged()
+
+        // Apply current search query if exists
+        val currentQuery = searchBar.text.toString()
+        if (currentQuery.isNotEmpty()) {
+            filterRestaurants(currentQuery)
         }
     }
 
@@ -312,7 +390,7 @@ class search : AppCompatActivity() {
                         Log.d("SearchDebug", "User location: $userLat, $userLng")
 
                         loadSavedRestaurantIds()
-                        loadRestaurants()
+                        loadAllRestaurants() // Load all restaurants at once
                     } else {
                         val message = json.optString("message", "Location not found")
                         Log.e("SearchDebug", "Error: $message")
@@ -333,14 +411,15 @@ class search : AppCompatActivity() {
         Volley.newRequestQueue(this).add(request)
     }
 
-    private fun loadRestaurants() {
+    private fun loadAllRestaurants() {
         if (userLat == 0.0 || userLng == 0.0) {
             Log.e("SearchDebug", "Invalid user location: $userLat, $userLng")
             return
         }
 
-        val url = "${Global.BASE_URL}get_restaurants.php?latitude=$userLat&longitude=$userLng&max_distance=5"
-        Log.d("SearchDebug", "Loading restaurants from: $url")
+        // Load all restaurants (no distance limit)
+        val url = "${Global.BASE_URL}get_all_restaurants.php?latitude=$userLat&longitude=$userLng"
+        Log.d("SearchDebug", "Loading all restaurants from: $url")
 
         val request = StringRequest(
             Request.Method.GET, url,
@@ -353,6 +432,7 @@ class search : AppCompatActivity() {
                     if (success) {
                         val restaurantsArray = json.getJSONArray("restaurants")
                         allRestaurants.clear()
+                        nearbyRestaurants.clear()
 
                         for (i in 0 until restaurantsArray.length()) {
                             val item = restaurantsArray.getJSONObject(i)
@@ -371,16 +451,20 @@ class search : AppCompatActivity() {
                                 isSaved = savedRestaurantIds.contains(restaurantId)
                             )
                             allRestaurants.add(restaurant)
+
+                            // Separate nearby restaurants (5km)
+                            if (restaurant.distanceKm <= 5.0) {
+                                nearbyRestaurants.add(restaurant)
+                            }
                         }
 
-                        Log.d("SearchDebug", "Loaded ${allRestaurants.size} restaurants")
+                        Log.d("SearchDebug", "Loaded ${allRestaurants.size} total restaurants, ${nearbyRestaurants.size} nearby")
 
-                        filteredRestaurants.clear()
-                        filteredRestaurants.addAll(allRestaurants)
-                        restaurantsAdapter.notifyDataSetChanged()
+                        // Apply current filter
+                        applyFilters()
 
                         if (allRestaurants.isEmpty()) {
-                            Toast.makeText(this, "No restaurants found within 5km", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this, "No restaurants found", Toast.LENGTH_SHORT).show()
                         }
                     } else {
                         val message = json.optString("message", "Failed to load restaurants")
@@ -401,14 +485,27 @@ class search : AppCompatActivity() {
     }
 
     private fun filterRestaurants(query: String) {
+        val currentList = mutableListOf<Restaurant>()
+
+        // Get the base list based on current filter
+        if (isNearSelected && isAllSelected) {
+            currentList.addAll(allRestaurants)
+        } else if (isNearSelected) {
+            currentList.addAll(nearbyRestaurants)
+        } else if (isAllSelected) {
+            currentList.addAll(allRestaurants.filter { it.distanceKm > 5.0 })
+        } else {
+            currentList.addAll(allRestaurants)
+        }
+
         filteredRestaurants.clear()
 
         if (query.isEmpty()) {
-            filteredRestaurants.addAll(allRestaurants)
+            filteredRestaurants.addAll(currentList)
         } else {
             val lowerQuery = query.lowercase()
             filteredRestaurants.addAll(
-                allRestaurants.filter { restaurant ->
+                currentList.filter { restaurant ->
                     restaurant.businessName.lowercase().contains(lowerQuery)
                 }
             )
