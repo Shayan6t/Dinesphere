@@ -1,6 +1,8 @@
 package com.example.dinesphere
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.Bundle
 import android.widget.ImageButton
 import android.widget.LinearLayout
@@ -106,7 +108,33 @@ class menu : AppCompatActivity() {
         recyclerMenu.adapter = menuAdapter
     }
 
+    // --- Helper: Network Check ---
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val activeNetworkInfo = connectivityManager.activeNetworkInfo
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected
+    }
+
     private fun loadCategories() {
+        // 1. Load Local Cache First (Instant)
+        val cachedCategories = databaseHelper.getCachedCategories(restaurantId)
+        if (cachedCategories.isNotEmpty()) {
+            cachedCategories[0].isSelected = true // Auto-select first category
+            categoryAdapter.updateData(cachedCategories)
+            loadMenuItems(cachedCategories[0].categoryId) // Load menu for it
+        }
+
+        // 2. If Offline, stop here
+        if (!isNetworkAvailable()) {
+            if (cachedCategories.isEmpty()) {
+                Toast.makeText(this, "Offline and no menu data.", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "Showing cached menu", Toast.LENGTH_SHORT).show()
+            }
+            return
+        }
+
+        // 3. If Online, fetch from API
         val url = "${Global.RESTAURANT_URL}category(get).php?restaurant_id=$restaurantId"
         android.util.Log.d("MenuDebug", "Fetching categories from: $url")
 
@@ -130,6 +158,10 @@ class menu : AppCompatActivity() {
                             ))
                         }
 
+                        // Save to Cache
+                        databaseHelper.cacheCategories(restaurantId, list)
+
+                        // Update UI
                         categoryAdapter.updateData(list)
 
                         if (list.isNotEmpty()) {
@@ -145,17 +177,28 @@ class menu : AppCompatActivity() {
             },
             { error ->
                 android.util.Log.e("MenuDebug", "Volley Error: ${error.message}")
-                Toast.makeText(this, "Failed to load categories", Toast.LENGTH_SHORT).show()
+                // No toast here if we already showed cached data
             }
         )
         Volley.newRequestQueue(this).add(request)
     }
 
     private fun loadMenuItems(categoryId: Int) {
+        // 1. Load Local Cache First
+        val cachedItems = databaseHelper.getCachedMenuItems(categoryId)
+        if (cachedItems.isNotEmpty()) {
+            menuAdapter.updateData(cachedItems)
+        } else {
+            // Only clear list if we have no cached data, to avoid flickering
+            menuAdapter.updateData(emptyList())
+        }
+
+        // 2. If Offline, stop
+        if (!isNetworkAvailable()) return
+
+        // 3. If Online, fetch fresh data
         val url = "${Global.RESTAURANT_URL}menu(get).php?category_id=$categoryId"
         android.util.Log.d("MenuDebug", "Fetching menu from: $url")
-
-        menuAdapter.updateData(emptyList())
 
         val request = StringRequest(Request.Method.GET, url,
             { response ->
@@ -176,6 +219,11 @@ class menu : AppCompatActivity() {
                                 menuImage = obj.optString("menu_image")
                             ))
                         }
+
+                        // Save to Cache
+                        databaseHelper.cacheMenuItems(categoryId, list)
+
+                        // Update UI
                         menuAdapter.updateData(list)
                     } else {
                         android.util.Log.d("MenuDebug", "No items or status error")
