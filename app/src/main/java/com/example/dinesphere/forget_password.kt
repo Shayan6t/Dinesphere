@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.ImageView
+import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -20,12 +22,21 @@ import org.json.JSONObject
 class forget_password : AppCompatActivity() {
 
     private lateinit var emailInput: EditText
+    private lateinit var otpInputLayout: LinearLayout
+    private lateinit var otp1: EditText
+    private lateinit var otp2: EditText
+    private lateinit var otp3: EditText
+    private lateinit var otp4: EditText
+    private lateinit var otp5: EditText
+    private lateinit var otp6: EditText
     private lateinit var sendOtpBtn: RelativeLayout
-    private lateinit var verifyBtn: RelativeLayout
+    private lateinit var changeBtn: RelativeLayout
     private lateinit var backBtn: ImageView
 
-    // Flag to track if the email has been authenticated (either via API or passed from Profile)
     private var isEmailVerified = false
+    private var currentResetToken: String? = null
+    private var currentEmail: String = ""
+    private var otpVerificationComplete = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +48,20 @@ class forget_password : AppCompatActivity() {
             insets
         }
 
+        // Initialize Views
         emailInput = findViewById(R.id.email_input)
         sendOtpBtn = findViewById(R.id.sendOTP_btn)
-        verifyBtn = findViewById(R.id.change_btn)
+        changeBtn = findViewById(R.id.change_btn)
         backBtn = findViewById(R.id.back)
+        otpInputLayout = findViewById(R.id.OTP_input)
+
+        // Initialize OTP input fields (6 digits)
+        otp1 = findViewById(R.id.otp1)
+        otp2 = findViewById(R.id.otp2)
+        otp3 = findViewById(R.id.otp3)
+        otp4 = findViewById(R.id.otp4)
+        otp5 = findViewById(R.id.otp5)
+        otp6 = findViewById(R.id.otp6)
 
         // Fix click stealing
         findViewById<View>(R.id.sendOTP_back).isClickable = false
@@ -49,59 +70,56 @@ class forget_password : AppCompatActivity() {
         backBtn.setOnClickListener { finish() }
 
         // Initially disable change button
-        setVerifyButtonState(false)
+        setChangeButtonState(false)
 
-        // 1. Check if an email was passed (meaning user came from Profile/authenticated state)
+        // Check if an email was passed (authenticated flow from Profile)
         val incomingEmail = intent.getStringExtra("USER_EMAIL")
 
         if (!incomingEmail.isNullOrEmpty()) {
-            // --- AUTHENTICATED FLOW (SKIP OTP) ---
+            // --- AUTHENTICATED FLOW (from Profile) ---
             emailInput.setText(incomingEmail)
-            emailInput.isEnabled = false // Prevent editing the email
-
-            sendOtpBtn.alpha = 0.5f // Visually disable Send OTP
+            emailInput.isEnabled = false
+            sendOtpBtn.alpha = 0.5f
             sendOtpBtn.isEnabled = false
-
-            isEmailVerified = true // Mark as verified since authentication is known
-            setVerifyButtonState(true) // Immediately enable Change Password
-            showToast("Ready to set new password.")
+            otpInputLayout.visibility = View.GONE
+            isEmailVerified = true
+            otpVerificationComplete = true
+            currentEmail = incomingEmail
+            setChangeButtonState(true)
+            updateChangeButtonText("Change Password")
+            showToast("Ready to set new password")
         }
 
-        // 2. Standard Flow: Send OTP Button
+        // Send OTP Button
         sendOtpBtn.setOnClickListener {
             val email = emailInput.text.toString().trim()
             if (email.isNotEmpty()) {
-                // In standard flow, we check existence and simulate sending OTP
-                checkUserExists(email, isFinalAction = false)
+                generateOTP(email)
             } else {
-                showToast("Enter email first")
+                showToast("Enter your email first")
             }
         }
 
-        // 3. Standard Flow: Change Password Button
-        verifyBtn.setOnClickListener {
-            if (isEmailVerified) {
-                val email = emailInput.text.toString().trim()
-                // Navigate to Change Password Screen, passing the confirmed email
-                val intent = Intent(this, change_password::class.java)
-                intent.putExtra("USER_EMAIL", email)
-                startActivity(intent)
-                finish()
-            } else {
-                showToast("Please verify OTP first (or send OTP).")
+        // Change Password Button - Does different things based on flow state
+        changeBtn.setOnClickListener {
+            if (otpVerificationComplete) {
+                // OTP already verified, proceed to change password
+                navigateToChangePassword()
+            } else if (otpInputLayout.visibility == View.VISIBLE) {
+                // OTP input is visible, user wants to verify OTP
+                val otp = getOTPFromInputs()
+                if (otp.length == 6) {
+                    verifyOTP(currentEmail, otp)
+                } else {
+                    showToast("Enter valid 6-digit OTP")
+                }
             }
         }
     }
 
-    private fun setVerifyButtonState(enabled: Boolean) {
-        verifyBtn.isEnabled = enabled
-        verifyBtn.alpha = if (enabled) 1.0f else 0.5f
-    }
+    private fun generateOTP(email: String) {
+        val url = Global.BASE_URL + "generate_otp.php"
 
-    private fun checkUserExists(email: String, isFinalAction: Boolean) {
-        val url = Global.BASE_URL + "check_user.php"
-
-        // Disable interaction while loading
         sendOtpBtn.isEnabled = false
         sendOtpBtn.alpha = 0.5f
 
@@ -117,34 +135,23 @@ class forget_password : AppCompatActivity() {
                     val message = json.optString("message")
 
                     if (success) {
-                        // User found (Success in both standard and final steps)
-
-                        if (isFinalAction) {
-                            // This path is only reached if the user successfully verifies OTP (TBD)
-                            val intent = Intent(this, change_password::class.java)
-                            intent.putExtra("USER_EMAIL", email)
-                            startActivity(intent)
-                            finish()
-                        } else {
-                            // Standard flow: User exists, now simulate OTP send
-                            showToast("OTP sent to email. Enter the code and verify.")
-                            isEmailVerified = true // Simulate OTP verified successfully
-                            setVerifyButtonState(true)
-                        }
+                        currentEmail = email
+                        otpInputLayout.visibility = View.VISIBLE
+                        updateChangeButtonText("Verify OTP")
+                        setChangeButtonState(true)
+                        showToast("OTP sent to your email")
+                        focusFirstOTPField()
                     } else {
                         showToast(message)
-                        setVerifyButtonState(false)
                     }
                 } catch (e: Exception) {
-                    showToast("Error parsing response")
-                    setVerifyButtonState(false)
+                    showToast("Error: Could not parse response")
                 }
             },
             Response.ErrorListener {
                 sendOtpBtn.isEnabled = true
                 sendOtpBtn.alpha = 1.0f
                 showToast("Connection failed")
-                setVerifyButtonState(false)
             }
         ) {
             override fun getParams(): MutableMap<String, String> {
@@ -153,7 +160,99 @@ class forget_password : AppCompatActivity() {
                 return params
             }
         }
+
         Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun verifyOTP(email: String, otp: String) {
+        val url = Global.BASE_URL + "verify_otp.php"
+
+        changeBtn.isEnabled = false
+        changeBtn.alpha = 0.5f
+
+        val request = object : StringRequest(
+            Request.Method.POST, url,
+            Response.Listener { response ->
+                changeBtn.isEnabled = true
+                changeBtn.alpha = 1.0f
+
+                try {
+                    val json = JSONObject(response)
+                    val success = json.optBoolean("success")
+                    val message = json.optString("message")
+
+                    if (success) {
+                        currentResetToken = json.optString("reset_token")
+                        isEmailVerified = true
+                        otpVerificationComplete = true
+                        updateChangeButtonText("Change Password")
+                        setChangeButtonState(true)
+                        showToast("OTP verified! Ready to reset password")
+                    } else {
+                        showToast(message)
+                        clearOTPInputs()
+                    }
+                } catch (e: Exception) {
+                    showToast("Error: Could not parse response")
+                }
+            },
+            Response.ErrorListener {
+                changeBtn.isEnabled = true
+                changeBtn.alpha = 1.0f
+                showToast("Verification failed")
+            }
+        ) {
+            override fun getParams(): MutableMap<String, String> {
+                val params = HashMap<String, String>()
+                params["email"] = email
+                params["otp"] = otp
+                return params
+            }
+        }
+
+        Volley.newRequestQueue(this).add(request)
+    }
+
+    private fun navigateToChangePassword() {
+        val intent = Intent(this, change_password::class.java)
+        intent.putExtra("USER_EMAIL", currentEmail)
+        intent.putExtra("RESET_TOKEN", currentResetToken)
+        startActivity(intent)
+        finish()
+    }
+
+    private fun getOTPFromInputs(): String {
+        val otp = otp1.text.toString().trim() +
+                otp2.text.toString().trim() +
+                otp3.text.toString().trim() +
+                otp4.text.toString().trim() +
+                otp5.text.toString().trim() +
+                otp6.text.toString().trim()
+        return otp
+    }
+
+    private fun clearOTPInputs() {
+        otp1.text.clear()
+        otp2.text.clear()
+        otp3.text.clear()
+        otp4.text.clear()
+        otp5.text.clear()
+        otp6.text.clear()
+        focusFirstOTPField()
+    }
+
+    private fun focusFirstOTPField() {
+        otp1.requestFocus()
+    }
+
+    private fun setChangeButtonState(enabled: Boolean) {
+        changeBtn.isEnabled = enabled
+        changeBtn.alpha = if (enabled) 1.0f else 0.5f
+    }
+
+    private fun updateChangeButtonText(text: String) {
+        val changeText: TextView = findViewById(R.id.change_text)
+        changeText.text = text
     }
 
     private fun showToast(msg: String) {
